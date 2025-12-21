@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双锋对决 - 排行榜</title>
+    <link rel="stylesheet" href="../styles/new.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b);
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+        }
+        
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .leaderboard-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .leaderboard-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid #fff;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .leaderboard-table th {
+            font-weight: bold;
+            color: #fff;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .leaderboard-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .rank {
+            font-weight: bold;
+            text-align: center;
+            width: 50px;
+        }
+        
+        .rank-1 {
+            color: #FFD700;
+        }
+        
+        .rank-2 {
+            color: #C0C0C0;
+        }
+        
+        .rank-3 {
+            color: #CD7F32;
+        }
+        
+        .username {
+            font-weight: bold;
+        }
+        
+        .score {
+            font-family: monospace;
+            font-size: 1.1rem;
+            text-align: right;
+        }
+        
+        .level-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .character-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+        
+        .character-mage {
+            background-color: rgba(66, 133, 244, 0.7);
+        }
+        
+        .character-mech {
+            background-color: rgba(234, 67, 53, 0.7);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .error {
+            text-align: center;
+            padding: 2rem;
+            color: #ff6b6b;
+            background-color: rgba(255, 107, 107, 0.1);
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>双锋对决 - 排行榜</h1>
+            <p>查看全球最高分和玩家成就</p>
+        </header>
+        
+        <div class="nav-buttons">
+            <a href="index.html" class="btn">返回游戏</a>
+            <button id="refreshBtn" class="btn">刷新数据</button>
+        </div>
+        
+        <div class="leaderboard-container">
+            <div class="leaderboard-tabs">
+                <div class="tab active" data-tab="global">全球排行榜</div>
+                <div class="tab" data-tab="recent">最近记录</div>
+            </div>
+            
+            <div id="global" class="tab-content active">
+                <div class="loading">正在加载全球排行榜数据...</div>
+            </div>
+            
+            <div id="recent" class="tab-content">
+                <div class="loading">正在加载最近记录...</div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2023 双锋对决. 使用Supabase数据库提供支持.</p>
+    </footer>
+
+    <!-- Supabase客户端库 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script>
+        // Supabase配置
+        const SUPABASE_URL = 'https://vlturfwdcjlrsoswkzvr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsdHVyZndkY2pscnNvc3drenZyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NjIyMjA2MiwiZXhwIjoyMDgxNzk4MDYyfQ.fZNNS_1n7HI4r9IaIydfaewXbvzwVonG8I8EGlTvqqc';
+        
+        // 初始化Supabase
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // 关卡名称映射
+        const levelNames = [
+            '城镇广场',
+            '峭壁之战',
+            '地下矿井',
+            '天空之城',
+            '火山熔岩',
+            '冰雪要塞'
+        ];
+        
+        // DOM元素
+        const globalTab = document.querySelector('[data-tab="global"]');
+        const recentTab = document.querySelector('[data-tab="recent"]');
+        const globalContent = document.getElementById('global');
+        const recentContent = document.getElementById('recent');
+        const refreshBtn = document.getElementById('refreshBtn');
+        
+        // 当前活跃的标签页
+        let activeTab = 'global';
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 加载全球排行榜数据
+            loadGlobalLeaderboard();
+            
+            // 事件监听
+            globalTab.addEventListener('click', function() {
+                setActiveTab('global');
+                loadGlobalLeaderboard();
+            });
+            
+            recentTab.addEventListener('click', function() {
+                setActiveTab('recent');
+                loadRecentScores();
+            });
+            
+            refreshBtn.addEventListener('click', function() {
+                if (activeTab === 'global') {
+                    loadGlobalLeaderboard();
+                } else {
+                    loadRecentScores();
+                }
+            });
+        });
+        
+        // 设置活跃标签页
+        function setActiveTab(tabName) {
+            // 更新标签页样式
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.tab === tabName) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // 更新内容显示
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            
+            // 更新当前活跃标签页
+            activeTab = tabName;
+        }
+        
+        // 加载全球排行榜
+        async function loadGlobalLeaderboard() {
+            showLoading('global');
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('game_scores')
+                    .select(`
+                        score,
+                        level,
+                        character,
+                        created_at,
+                        user: profiles(username)
+                    `)
+                    .order('score', { ascending: false })
+                    .limit(20);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                renderLeaderboard('global', data);
+            } catch (error) {
+                console.error('加载全球排行榜失败:', error.message);
+                showError('global', '加载数据失败，请稍后再试');
+            }
+        }
+        
+        // 加载最近记录
+        async function loadRecentScores() {
+            showLoading('recent');
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('game_scores')
+                    .select(`
+                        score,
+                        level,
+                        character,
+                        created_at,
+                        user: profiles(username)
+                    `)
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                renderLeaderboard('recent', data);
+            } catch (error) {
+                console.error('加载最近记录失败:', error.message);
+                showError('recent', '加载数据失败，请稍后再试');
+            }
+        }
+        
+        // 渲染排行榜
+        function renderLeaderboard(tabName, scores) {
+            const container = document.getElementById(tabName);
+            
+            if (!scores || scores.length === 0) {
+                container.innerHTML = '<div class="empty-state">暂无记录</div>';
+                return;
+            }
+            
+            let html = `
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>排名</th>
+                            <th>玩家</th>
+                            <th>得分</th>
+                            <th>关卡</th>
+                            <th>角色</th>
+                            <th>时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            scores.forEach((score, index) => {
+                const rankClass = index < 3 ? `rank-${index + 1}` : '';
+                const username = score.user?.username || '未知玩家';
+                const levelName = levelNames[score.level] || `关卡 ${score.level + 1}`;
+                const characterClass = score.character === 'mage' ? 'character-mage' : 'character-mech';
+                const characterName = score.character === 'mage' ? '法师' : '机械师';
+                
+                // 格式化时间
+                const date = new Date(score.created_at);
+                const formattedDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                
+                html += `
+                    <tr>
+                        <td class="rank ${rankClass}">${index + 1}</td>
+                        <td class="username">${username}</td>
+                        <td class="score">${score.score.toLocaleString()}</td>
+                        <td><span class="level-badge">${levelName}</span></td>
+                        <td><span class="character-badge ${characterClass}">${characterName}</span></td>
+                        <td>${formattedDate}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        // 显示加载中
+        function showLoading(tabName) {
+            document.getElementById(tabName).innerHTML = '<div class="loading">正在加载数据...</div>';
+        }
+        
+        // 显示错误
+        function showError(tabName, message) {
+            document.getElementById(tabName).innerHTML = `<div class="error">${message}</div>`;
+        }
+    </script>
+</body>
+</html>

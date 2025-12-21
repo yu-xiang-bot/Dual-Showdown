@@ -1,283 +1,92 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Crumble</title>
-        <link rel = "stylesheet" href = "new.css"/>
-        <script src="jquery.min.js"></script>
-    </head>
-    <body>
-        <div class = "map">
-            <div id="artBox">
-                <div id="leftHouse"></div>
-                <div id="rightHouse"></div>
-                <div id="back"></div>
-            </div>
-            <div class = "man one"></div>
-            <div class = "man two"></div>
-            <div class = "line oo"></div>
-            <div class = "line tt"></div>
-            <div class = "meteor"></div>
-            <div class = "shielding"></div>
-            <div class = "ground bottom"></div>
-            <div class = "ground left"></div>
-            <div class = "ground right"></div>
-            <div class = "sign Ma"></div>
-            <div class = "sign Me"></div>
-            <div id="bulletBox"></div>
-            <div id="speedTip"></div>
-            <div id="bloodBox">
-                <div></div>
-            </div>
-            <div class = "medical kit"></div>
-            <div class = "medical bottle"></div>
-            <div id="aiBox"></div>
-            <div id="fireBox"></div>
-            <div class = "gg">
-                <p class = "winner"></p>
-            </div>
-            <div class = "start">Round 1</div>
-        </div>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双锋对决 - Crumble</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: url('assets/images/cover.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: Arial, sans-serif;
+        }
         
-        <div class = "health B1">
-            <div class = "H1 h10"></div>
-            <div class = "H1 shield"></div>
-            <div class = "H1 h11"></div>
-        </div>
-        <div class = "health B2">
-            <div class = "H2 h20"></div>
-            <div class = "H2 h21"></div>
-        </div>
-
-        <div class = "energy Mag">
-            <div class = "En1 enLine"></div>
-        </div>
-        <div class = "energy Mech">
-            <div class = "En2 enLine"></div>
-        </div>
-        <div id = "sound">
-            <audio class = "MageAudio">
-                <source src="sound/mage/fireAtk.mp3" type="audio/mpeg" /><!--0-->
-            </audio>
-            <audio class = "MageAudio">
-                <source src="sound/mage/fireboom.mp3" type="audio/mpeg" /><!--1-->
-            </audio>
-            <audio class = "MageAudio">
-                <source src="sound/mage/mage.ah1.mp3" type="audio/mpeg" /><!--2-->
-            </audio>
-            <audio class = "MageAudio">
-                <source src="sound/mage/mage.ah2.mp3" type="audio/mpeg" /><!--3-->
-            </audio>
-            <audio class = "MageAudio">
-                <source src="sound/mage/mage.ah3.mp3" type="audio/mpeg" /><!--4-->
-            </audio>
-            <audio class = "MageAudio">
-                <source src="sound/mage/mageDie.mp3" type="audio/mpeg" /><!--5-->
-            </audio>
-            <audio class = "MageAudio">
-                <source src="sound/mage/mageWin.mp3" type="audio/mpeg" /><!--6-->
-            </audio>
-            <audio class = "MageAudio">
-                <source src="sound/mage/servant.die.mp3" type="audio/mpeg" /><!--7-->
-            </audio>
-            <audio class = "MageAudio">
-                <source src="sound/mage/servant.say.mp3" type="audio/mpeg" /><!--8-->
-            </audio>
-            <audio class = "MageAudio">
-                <source src="sound/mage/yes.my.mp3" type="audio/mpeg" /><!--9-->
-            </audio>
-            <audio class = "MageAudio">
-                <source src="sound/mage/tinyfire.mp3" type="audio/mpeg" /><!--10-->
-            </audio>
-            <audio class = "MageAudio">
-                <source src="sound/mage/stop.mp3" type="audio/mpeg" /><!--11-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/boom.mp3" type="audio/mpeg" /><!--0-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/crazy.mp3" type="audio/mpeg" /><!--1-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/drone.mp3" type="audio/mpeg" /><!--2-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/droneboom.mp3" type="audio/mpeg" /><!--3-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/flash.mp3" type="audio/mpeg" /><!--4-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/grenade.mp3" type="audio/mpeg" /><!--5-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/mechDie.mp3" type="audio/mpeg" /><!--6-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/mechhurt1.mp3" type="audio/mpeg" /><!--7-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/mechhurt2.mp3" type="audio/mpeg" /><!--8-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/mechhurt3.mp3" type="audio/mpeg" /><!--9-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/mechWin.mp3" type="audio/mpeg" /><!--10-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/reload.mp3" type="audio/mpeg" /><!--11-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/reloadFast.mp3" type="audio/mpeg" /><!--12-->
-            </audio>
-            <audio class = "MechAudio">
-                <source src="sound/mech/walk.mp3" type="audio/mpeg" /><!--13-->
-            </audio>
-            <audio class = "healAudio">
-                <source src="sound/heal.mp3" type="audio/mpeg" />
-            </audio>
-            <audio class = "roundAudio">
-                <source src="sound/round1.mp3" type="audio/mpeg" />
-            </audio>
-            <audio class = "roundAudio">
-                <source src="sound/round2.mp3" type="audio/mpeg" />
-            </audio>
-            <audio class = "roundAudio">
-                <source src="sound/round3.mp3" type="audio/mpeg" />
-            </audio>
-            <audio class = "roundAudio">
-                <source src="sound/fight.mp3" type="audio/mpeg" />
-             </audio>
-            <audio class = "roundAudio">
-                <source src="sound/round4.mp3" type="audio/mpeg" />
-             </audio>
-            <audio class = "roundAudio">
-                <source src="sound/round5.mp3" type="audio/mpeg" />
-              </audio>
-            <audio class = "roundAudio">
-                <source src="sound/round6.mp3" type="audio/mpeg" />
-              </audio>
-            <audio class = "BGM" loop>
-                <source src="sound/BGM1.mp3" type="audio/mpeg" />
-              </audio>
-            <audio class = "BGM" loop>
-                <source src="sound/BGM6.mp3" type="audio/mpeg" />
-               </audio>
-            <audio class = "BGM" loop>
-                <source src="sound/BGM2.mp3" type="audio/mpeg" />
-               </audio>
-            <audio class = "BGM" loop>
-                <source src="sound/BGM3.mp3" type="audio/mpeg" />
-                </audio>
-            <audio class = "BGM" loop>
-                <source src="sound/BGM4.mp3" type="audio/mpeg" />
-                </audio>
-            <audio class = "BGM" loop>
-                <source src="sound/BGM5.mp3" type="audio/mpeg" />
-                </audio>
-        </div>
-        <div class = "replay">Replay</div>
-        <div class = "menu-toggle" id="menuToggle">☰</div>
-        <div class = "sound-toggle" id="soundToggle">🔊</div>
-        <div class = "help-toggle" id="helpToggle">❓</div>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 2rem;
+            border-radius: 10px;
+            margin: 2rem;
+        }
         
-        <div class = "main-menu" id="mainMenu">
-            <div class="menu-content">
-                <h2>主菜单</h2>
-                <ul class="menu-list">
-                    <li id="resumeGame">继续游戏</li>
-                    <li id="selectLevel">选择关卡</li>
-                    <li id="restartGame">重新开始</li>
-                    <li id="returnToLogin">返回登录页</li>
-                    <li id="showHelp">操作说明</li>
-                    <li id="toggleSound">音效开关</li>
-                </ul>
-            </div>
-        </div>
+        h1 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
         
-        <div class = "level-modal" id="levelModal">
-            <div class="level-content">
-                <div class="level-header">
-                    <h2>选择关卡</h2>
-                    <span class="close-btn" id="closeLevel">&times;</span>
-                </div>
-                <div class="level-body">
-                    <div class="level-grid">
-                        <div class="level-item" data-level="0">
-                            <div class="level-number">1</div>
-                            <div class="level-name">城镇广场</div>
-                        </div>
-                        <div class="level-item" data-level="1">
-                            <div class="level-number">2</div>
-                            <div class="level-name">峭壁之战</div>
-                        </div>
-                        <div class="level-item" data-level="2">
-                            <div class="level-number">3</div>
-                            <div class="level-name">地下矿井</div>
-                        </div>
-                        <div class="level-item" data-level="3">
-                            <div class="level-number">4</div>
-                            <div class="level-name">天空之城</div>
-                        </div>
-                        <div class="level-item" data-level="4">
-                            <div class="level-number">5</div>
-                            <div class="level-name">火山熔岩</div>
-                        </div>
-                        <div class="level-item" data-level="5">
-                            <div class="level-number">6</div>
-                            <div class="level-name">冰雪要塞</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
         
-        <div class = "help-modal" id="helpModal">
-            <div class="help-content">
-                <div class="help-header">
-                    <h2>技能介绍</h2>
-                    <span class="close-btn" id="closeHelp">&times;</span>
-                </div>
-                <div class="help-body">
-                    <div class="skills-container">
-                        <div class="character-skills mage">
-                            <h3>法师 (左侧)</h3>
-                            <ul>
-                                <li><strong>移动：</strong>A (左), D (右)</li>
-                                <li><strong>跳跃：</strong>W (可二段跳)</li>
-                                <li><strong>攻击 [X]：</strong>发射火球，造成基础伤害</li>
-                                <li><strong>护盾 [C]：</strong>生成魔法护盾，吸收伤害</li>
-                                <li><strong>禁锢 [V]：</strong>禁锢敌人8秒，使其无法移动</li>
-                                <li><strong>陨石术 [B]：</strong>按住蓄力，释放时造成大量范围伤害</li>
-                                <li><strong>召唤仆从 [Q]：</strong>能量满时召唤仆从协助战斗</li>
-                            </ul>
-                        </div>
-                        <div class="character-skills mech">
-                            <h3>机械师 (右侧)</h3>
-                            <ul>
-                                <li><strong>移动：</strong>← (左), → (右)</li>
-                                <li><strong>跳跃：</strong>↑ (可二段跳)</li>
-                                <li><strong>攻击 [,]：</strong>使用近战武器攻击</li>
-                                <li><strong>闪光弹 [.]：</strong>瞬间向前传送180像素</li>
-                                <li><strong>疯狂模式 [M]：</strong>提升攻击力和速度，但消耗生命值</li>
-                                <li><strong>手雷 [P]：</strong>按住蓄力，释放后投掷手雷</li>
-                                <li><strong>无人机群 [L]：</strong>能量满时释放5架攻击无人机</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="game-tips">
-                        <h3>游戏提示</h3>
-                        <ul>
-                            <li>地图上两侧有医疗包，可恢复生命值</li>
-                            <li>攻击敌人可以积累能量</li>
-                            <li>能量满时可以使用终极技能(Q/L)</li>
-                            <li>率先赢得2个回合的玩家获胜</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+        .game-button {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
         
-        <script src ="control.js"></script>
-    </body>
+        .game-button:hover {
+            background-color: #45a049;
+        }
+        
+        .secondary-button {
+            background-color: #2196F3;
+        }
+        
+        .secondary-button:hover {
+            background-color: #0b7dda;
+        }
+        
+        .info-text {
+            color: #fff;
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>双锋对决 - Crumble</h1>
+        <div class="button-container">
+            <a href="pages/cover.html" class="game-button">开始游戏</a>
+            <a href="pages/login.html" class="game-button secondary-button">登录/注册</a>
+            <a href="pages/leaderboard.html" class="game-button secondary-button">排行榜</a>
+            <a href="pages/init-database.html" class="game-button secondary-button">数据库初始化</a>
+        </div>
+        <p class="info-text">
+            欢迎来到双锋对决！一款精彩的2D横版双人格斗游戏。
+        </p>
+    </div>
+</body>
 </html>

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双锋对决 - 登录</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000;
+            background-image: url('../assets/images/cover.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: 'Kalam', cursive;
+        }
+        
+        .login-container {
+            background: rgba(255, 51, 102, 0.1);
+            backdrop-filter: blur(5px);
+            border: 3px dashed rgba(255, 255, 255, 0.3);
+            padding: 2.5rem;
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(255, 51, 102, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+            transform: rotate(-1deg);
+            animation: float 6s ease-in-out infinite;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: "";
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            transform: rotate(2deg);
+            z-index: -1;
+        }
+        
+        .login-container::after {
+            content: "⚔️ 战斗登录 ⚔️";
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            transform: rotate(10deg);
+        }
+        
+        @keyframes float {
+            0% { transform: rotate(-1deg) translateY(0px); box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(255, 51, 102, 0.1); }
+            50% { transform: rotate(1deg) translateY(-10px); box-shadow: 0 0 40px rgba(255, 51, 102, 0.3), inset 0 0 20px rgba(255, 51, 102, 0.2); }
+            100% { transform: rotate(-1deg) translateY(0px); box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(255, 51, 102, 0.1); }
+        }
+        
+        .game-logo {
+            width: 80%;
+            max-width: 300px;
+            height: auto;
+            margin-bottom: 1.5rem;
+            transform: rotate(-2deg);
+            filter: drop-shadow(0 0 10px rgba(255, 51, 102, 0.7));
+            animation: pulse 2s infinite alternate;
+            position: relative;
+        }
+        
+        .game-logo::after {
+            content: "";
+            position: absolute;
+            width: 110%;
+            height: 8px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10"><path d="M0,5 Q25,10 50,5 T100,5" stroke="%2333ccff" fill="none" stroke-width="3" stroke-linecap="round" /></svg>') center/100% no-repeat;
+            bottom: -15px;
+            left: -5%;
+        }
+        
+        @keyframes pulse {
+            0% { transform: rotate(-2deg) scale(1); filter: drop-shadow(0 0 10px rgba(255, 51, 102, 0.7)); }
+            100% { transform: rotate(2deg) scale(1.05); filter: drop-shadow(0 0 15px rgba(255, 51, 102, 0.9)); }
+        }
+        
+        .form-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 1px 1px 0px #ff3366;
+            font-size: 1.1rem;
+            position: relative;
+            transform: rotate(-1deg);
+        }
+        
+        .form-group label::before {
+            content: "⚡";
+            position: absolute;
+            left: -15px;
+            color: #ffcc00;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.9rem;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px 5px 15px 5px / 5px 15px 5px 15px;
+            font-size: 1.1rem;
+            box-sizing: border-box;
+            color: #fff;
+            transition: all 0.3s ease;
+            font-family: 'Kalam', cursive;
+            position: relative;
+            transform: rotate(0.5deg);
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff3366;
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: rotate(0deg) scale(1.02);
+            box-shadow: 0 0 15px rgba(255, 51, 102, 0.3);
+        }
+        
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+        }
+        
+        .form-group:nth-child(even) input {
+            border-radius: 5px 15px 5px 15px / 15px 5px 15px 5px;
+            transform: rotate(-0.5deg);
+        }
+        
+        .form-group:nth-child(even) input:focus {
+            transform: rotate(0deg) scale(1.02);
+        }
+        
+        .form-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.9rem 1.5rem;
+            border: 2px solid #fff;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            flex: 1;
+            margin: 0 0.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-family: 'Kalam', cursive;
+            position: relative;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: rotate(-1deg);
+            z-index: 1;
+        }
+        
+        .btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+            z-index: -1;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary {
+            border-color: #ff3366;
+            color: #fff;
+            border-radius: 50% 20% / 20% 50%;
+            box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: rotate(0deg) scale(1.05);
+            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
+            background-color: rgba(255, 51, 102, 0.3);
+        }
+        
+        .btn-secondary {
+            border-color: #33ccff;
+            color: #fff;
+            border-radius: 20% 50% / 50% 20%;
+            transform: rotate(1deg);
+            box-shadow: -5px 5px 0px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            transform: rotate(0deg) scale(1.05);
+            box-shadow: -3px 3px 0px rgba(0, 0, 0, 0.3);
+            background-color: rgba(51, 204, 255, 0.3);
+        }
+        
+        #guestMode .btn {
+            border-color: #ffcc00;
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            transform: rotate(-2deg);
+            box-shadow: 5px -5px 0px rgba(0, 0, 0, 0.3);
+        }
+        
+        #guestMode .btn:hover {
+            transform: rotate(0deg) scale(1.05);
+            box-shadow: 3px -3px 0px rgba(0, 0, 0, 0.3);
+            background-color: rgba(255, 204, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn::after {
+            content: "";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+        
+        .form-switch {
+            margin-top: 2rem;
+            text-align: center;
+            transform: rotate(1deg);
+        }
+        
+        .form-switch a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            text-shadow: 2px 2px 0px #ff3366;
+            transition: all 0.3s ease;
+            position: relative;
+            display: inline-block;
+            padding: 5px 10px;
+            border: 2px dashed transparent;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20% 80% 30% 70% / 30% 30% 70% 70%;
+        }
+        
+        .form-switch a:hover {
+            transform: rotate(-2deg) scale(1.05);
+            text-shadow: 2px 2px 0px #33ccff;
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .message {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 20% 80% 30% 70% / 30% 30% 70% 70%;
+            display: none;
+            position: relative;
+            border: 2px dashed;
+            font-family: 'Kalam', cursive;
+            font-weight: 700;
+            transform: rotate(-1deg);
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: rotate(-1deg); }
+            50% { transform: rotate(1deg); }
+        }
+        
+        .message.error {
+            background-color: rgba(255, 51, 102, 0.2);
+            color: #fff;
+            border-color: #ff3366;
+            text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5);
+        }
+        
+        .message.success {
+            background-color: rgba(51, 204, 0, 0.2);
+            color: #fff;
+            border-color: #33cc00;
+            text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5);
+        }
+        
+        .message::before {
+            content: "✎";
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+        }
+        
+        #guestMode {
+            margin-top: 2rem;
+            transform: rotate(1deg);
+        }
+        
+        .guest-info {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 0.5rem;
+            font-style: italic;
+            position: relative;
+        }
+        
+        .guest-info::before {
+            content: "~";
+            position: absolute;
+            left: -15px;
+            animation: blink 2s infinite;
+        }
+        
+        .guest-info::after {
+            content: "~";
+            position: absolute;
+            right: -15px;
+            animation: blink 2s infinite;
+        }
+        
+        /* 添加一些装饰元素 */
+        .doodle {
+            position: absolute;
+            font-size: 1.5rem;
+            opacity: 0.4;
+            z-index: -1;
+        }
+        
+        .doodle-1 {
+            top: 20px;
+            left: 20px;
+            transform: rotate(-20deg);
+            animation: float 8s ease-in-out infinite;
+            color: #ff3366;
+        }
+        
+        .doodle-2 {
+            bottom: 20px;
+            right: 20px;
+            transform: rotate(15deg);
+            animation: float 10s ease-in-out infinite;
+            color: #ffcc00;
+        }
+        
+        .doodle-3 {
+            top: 50%;
+            right: 10px;
+            transform: rotate(30deg);
+            animation: float 7s ease-in-out infinite;
+            color: #33ccff;
+        }
+        
+        /* 添加战斗风格的背景装饰 */
+        .login-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                transparent 48%, 
+                rgba(255, 51, 102, 0.1) 50%, 
+                transparent 52%), 
+                linear-gradient(-45deg, 
+                transparent 48%, 
+                rgba(255, 204, 0, 0.1) 50%, 
+                transparent 52%);
+            z-index: -1;
+            pointer-events: none;
+        }
+    </style>
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="doodle doodle-1">⚔️</div>
+        <div class="doodle doodle-2">🔥</div>
+        <div class="doodle doodle-3">⚡</div>
+        <img src="img/屏幕截图_2025-12-20_194343-removebg-preview.png" alt="双锋对决" class="game-logo">
+        
+        <div id="loginForm">
+            <div class="form-group">
+                <label for="email">邮箱</label>
+                <input type="email" id="email" placeholder="请输入您的邮箱" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" placeholder="请输入您的密码" required>
+            </div>
+            
+            <div id="usernameGroup" class="form-group" style="display: none;">
+                <label for="username">用户名</label>
+                <input type="text" id="username" placeholder="请输入您的用户名">
+            </div>
+            
+            <div class="form-buttons">
+                <button id="loginBtn" class="btn btn-primary">登录</button>
+                <button id="toggleFormBtn" class="btn btn-secondary">注册</button>
+            </div>
+            
+            <div id="guestMode">
+                <button id="guestBtn" class="btn btn-primary">游客模式</button>
+                <p class="guest-info">游客模式下游戏数据不会被保存</p>
+            </div>
+        </div>
+        
+        <div id="message" class="message"></div>
+    </div>
+
+    <!-- Supabase客户端库 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script>
+        // Supabase配置
+        const SUPABASE_URL = 'https://vlturfwdcjlrsoswkzvr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsdHVyZndkY2pscnNvc3drenZyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NjIyMjA2MiwiZXhwIjoyMDgxNzk4MDYyfQ.fZNNS_1n7HI4r9IaIydfaewXbvzwVonG8I8EGlTvqqc';
+        
+        // 初始化Supabase
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // DOM元素
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const usernameInput = document.getElementById('username');
+        const usernameGroup = document.getElementById('usernameGroup');
+        const loginBtn = document.getElementById('loginBtn');
+        const toggleFormBtn = document.getElementById('toggleFormBtn');
+        const guestBtn = document.getElementById('guestBtn');
+        const messageDiv = document.getElementById('message');
+        
+        // 表单状态：true表示登录表单，false表示注册表单
+        let isLoginForm = true;
+        
+        // 显示消息
+        function showMessage(message, isError = false) {
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${isError ? 'error' : 'success'}`;
+            messageDiv.style.display = 'block';
+            
+            // 5秒后自动隐藏消息
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // 切换表单
+        function toggleForm() {
+            isLoginForm = !isLoginForm;
+            
+            if (isLoginForm) {
+                loginBtn.textContent = '登录';
+                toggleFormBtn.textContent = '注册';
+                usernameGroup.style.display = 'none';
+            } else {
+                loginBtn.textContent = '注册';
+                toggleFormBtn.textContent = '登录';
+                usernameGroup.style.display = 'block';
+            }
+            
+            // 清空输入
+            emailInput.value = '';
+            passwordInput.value = '';
+            usernameInput.value = '';
+            messageDiv.style.display = 'none';
+        }
+        
+        // 登录功能
+        async function signIn() {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            
+            if (!email || !password) {
+                showMessage('请填写邮箱和密码', true);
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                // 登录成功，保存用户信息到localStorage
+                localStorage.setItem('user', JSON.stringify(data.user));
+                showMessage('登录成功！');
+                
+                // 跳转到游戏页面
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+                
+            } catch (error) {
+                showMessage(`登录失败: ${error.message}`, true);
+            }
+        }
+        
+        // 注册功能
+        async function signUp() {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const username = usernameInput.value.trim();
+            
+            if (!email || !password || !username) {
+                showMessage('请填写所有字段', true);
+                return;
+            }
+            
+            if (password.length < 6) {
+                showMessage('密码长度至少为6位', true);
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            username: username
+                        }
+                    }
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                showMessage('注册成功！请检查邮箱进行验证', false);
+                
+                // 注册成功后切换回登录表单
+                setTimeout(() => {
+                    toggleForm();
+                }, 2000);
+                
+            } catch (error) {
+                showMessage(`注册失败: ${error.message}`, true);
+            }
+        }
+        
+        // 游客模式
+        function guestMode() {
+            // 保存游客模式标记
+            localStorage.setItem('guestMode', 'true');
+            showMessage('以游客模式进入游戏');
+            
+            // 跳转到游戏页面
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+        
+        // 事件监听
+        toggleFormBtn.addEventListener('click', toggleForm);
+        loginBtn.addEventListener('click', () => {
+            if (isLoginForm) {
+                signIn();
+            } else {
+                signUp();
+            }
+        });
+        guestBtn.addEventListener('click', guestMode);
+        
+        // 按Enter键提交
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (isLoginForm) {
+                    signIn();
+                } else {
+                    signUp();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

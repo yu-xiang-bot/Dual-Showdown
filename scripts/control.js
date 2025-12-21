@@ -54,6 +54,11 @@ function game(){
     // 添加关卡系统
     var levels = ["城镇广场", "峭壁之战", "地下矿井", "天空之城", "火山熔岩", "冰雪要塞"];
     var currentLevel = 0; // 当前关卡索引（0-5）
+    
+    // 设置全局变量，供game-integration.js使用
+    window.trun = trun;
+    window.currentLevel = currentLevel;
+    window.st = st;
     function Control1() {
         this.x = 300;
         this.y = 100;
@@ -122,7 +127,7 @@ function game(){
             } else if(e.keyCode === 66){//attack C
                 if(self.cD[1]){
                     self.cD[1] = false;
-                    self.man.css("background-image","url(img/mageAttack.png)");
+                    self.man.css("background-image","url(../assets/images/characters/mageAttack.png)");
                     self.shoot();
                     setTimeout(function(){self.cD[1] = true;},850);
                 }
@@ -136,7 +141,7 @@ function game(){
             } else if(e.keyCode === 88){//prisoner X
                 if(self.cD[0]){
                     self.cD[0] = false;
-                    self.man.css("background-image","url(img/magePrisoner.gif)");
+                    self.man.css("background-image","url(../assets/images/characters/magePrisoner.gif)");
                     playAudio(MageAudio[11]);
                     self.prisoner = true;
                     new Cd(8,self.cD1,"X");
@@ -146,7 +151,7 @@ function game(){
                         },1200);
                     setTimeout(function(){self.cD[0] = true;},8000);
                     setTimeout(function(){
-                        self.man.css("background-image","url(img/mage.png)");
+                        self.man.css("background-image","url(../assets/images/characters/mage.png)");
                         },500);
                 }
             } else if(e.keyCode === 86){//Meteor b
@@ -201,10 +206,10 @@ function game(){
                             self.cD[3] = true;
                             self.cD[4] = true;
                         },7000);
-                        self.man.css("background-image","url(img/mage.png)");
+                        self.man.css("background-image","url(../assets/images/characters/mage.png)");
                     }
                 } else if(e.keyCode === 66){
-                    self.man.css("background-image","url(img/mage.png)");
+                    self.man.css("background-image","url(../assets/images/characters/mage.png)");
 
                 }
             }
@@ -219,7 +224,7 @@ function game(){
         }
         
         if(!self.cD[3] && self.cD[4]){
-             self.man.css("background-image","url(img/mageFire.gif)");
+             self.man.css("background-image","url(../assets/images/characters/mageFire.gif)");
         }
         
         if(self.fallTrue){
@@ -586,26 +591,26 @@ function game(){
             }
             
             if((you.press[0] || you.press[1]) && !you.fallTrue && !you.crazy){
-                you.man.css("background-image","url(img/mechanicianMove.gif)");
+                you.man.css("background-image","url(../assets/images/characters/mechanicianMove.gif)");
             } else if(you.fallTrue && !you.crazy){
-                you.man.css("background-image","url(img/mechanicianJump.gif)");
+                you.man.css("background-image","url(../assets/images/characters/mechanicianJump.gif)");
             } else if(!you.press[0] && !you.press[1] && !you.fallTrue && !you.crazy){
-                you.man.css("background-image","url(img/mechanician.png)");
+                you.man.css("background-image","url(../assets/images/characters/mechanician.png)");
             }else if((you.press[0] || you.press[1]) && !you.fallTrue && you.crazy){
-                you.man.css("background-image","url(img/crazy/mechanicianMove.gif)");
+                you.man.css("background-image","url(../assets/images/characters/crazy/mechanicianMove.gif)");
             } else if(you.fallTrue && you.crazy){
-                you.man.css("background-image","url(img/crazy/mechanicianJump.gif)");
+                you.man.css("background-image","url(../assets/images/characters/crazy/mechanicianJump.gif)");
             } else if(!you.press[0] && !you.press[1] && !you.fallTrue && you.crazy){
-                you.man.css("background-image","url(img/crazy/mechanician.png)");
+                you.man.css("background-image","url(../assets/images/characters/crazy/mechanician.png)");
             }
             
             if(mage.prisoner && !you.crazy){
-                you.man.css("background-image","url(img/mechanicianPrisoner.png)");
+                you.man.css("background-image","url(../assets/images/characters/mechanicianPrisoner.png)");
                 you.cD[5] = false;
                 clearInterval(you.timer[0]);
                 clearInterval(you.timer[1]);
             } else if(mage.prisoner && you.crazy){
-                you.man.css("background-image","url(img/crazy/mechanicianPrisoner.png)");
+                you.man.css("background-image","url(../assets/images/characters/crazy/mechanicianPrisoner.png)");
                 you.cD[5] = false;
                 clearInterval(you.timer[0]);
                 clearInterval(you.timer[1]);
@@ -845,6 +850,11 @@ function game(){
     }
 
     function death(who){
+        // 更新全局变量
+        window.trun = trun;
+        window.currentLevel = currentLevel;
+        window.st = st;
+        
         if (isSoundEnabled) {
             bgm.each(function() {
                 this.pause();
@@ -879,8 +889,16 @@ function game(){
             $replay.show();
         }
     }
+    
+    // 设置全局游戏结束函数，以供game-integration.js使用
+    window.death = death;
      
     function round(){
+        // 更新全局变量
+        window.trun = trun;
+        window.currentLevel = currentLevel;
+        window.st = st;
+        
         // 停止所有BGM，确保只有当前关卡的BGM在播放
         bgm.each(function() {
             this.pause();
@@ -992,40 +1010,40 @@ function game(){
         
         // 根据当前关卡设置背景图，确保自适应大小
         if(currentLevel === 0) { // 第一关卡（索引为0）
-            $("#back").css("background-image", "url(img/steve.art/background1.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background1.png)");
             $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse1.png)");
-            $("#rightHouse").css("background-image", "url(img/steve.art/rightHouse1.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse1.png)");
+            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse1.png)");
         } else if(currentLevel === 1) { // 第二关卡（索引为1）
-            $("#back").css("background-image", "url(img/steve.art/background2.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background2.png)");
             $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse2.png)");
-            $("#rightHouse").css("background-image", "url(img/steve.art/rightHouse2.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse2.png)");
+            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse2.png)");
         } else if(currentLevel === 2) { // 第三关卡（索引为2）
-            $("#back").css("background-image", "url(img/steve.art/background3.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background3.png)");
             $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse3.png)");
-            $("#rightHouse").css("background-image", "url(img/steve.art/rightHouse3.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse3.png)");
+            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse3.png)");
         } else if(currentLevel === 3) { // 第四关卡（索引为3）
-            $("#back").css("background-image", "url(img/steve.art/background4.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background4.png)");
             $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse4.png)");
-            $("#rightHouse").css("background-image", "url(img/steve.art/rightHouse4.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse4.png)");
+            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse4.png)");
         } else if(currentLevel === 4) { // 第五关卡（索引为4，火山熔岩主题）
-            $("#back").css("background-image", "url(img/steve.art/background5.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background5.png)");
             $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse5.png)");
-            $("#rightHouse").css("background-image", "url(img/steve.art/rightHouse5.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse5.png)");
+            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse5.png)");
         } else if(currentLevel === 5) { // 第六关卡（索引为5，冰雪城堡主题）
-            $("#back").css("background-image", "url(img/steve.art/background6.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background6.png)");
             $("#back").css("background-size", "100% 100%");
             $("#back").css("background-position", "center center");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse6.png)");
-            $("#rightHouse").css("background-image", "url(img/steve.art/rightHouse6.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse6.png)");
+            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse6.png)");
         } else { // 其他关卡使用默认背景
-            $("#back").css("background-image", "url(img/steve.art/background.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background1.png)");
             $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse1.png)");
         }
         
         // 为所有关卡设置统一的rightHouse大小，确保与第一关卡显示效果一致
@@ -1081,16 +1099,18 @@ function game(){
         $helpToggle = $("#helpToggle"),
         $helpModal = $("#helpModal"),
         $closeHelp = $("#closeHelp"),
-        $menuToggle = $("#menuToggle"),
-        $mainMenu = $("#mainMenu"),
-        $resumeGame = $("#resumeGame"),
-        $restartGame = $("#restartGame"),
-        $returnToLogin = $("#returnToLogin"),
-        $showHelp = $("#showHelp"),
-        $toggleSound = $("#toggleSound"),
-        $selectLevel = $("#selectLevel"),
-        $levelModal = $("#levelModal"),
-        $closeLevel = $("#closeLevel"),
+    $menuToggle = $("#menuToggle"),
+    $mainMenu = $("#mainMenu"),
+    $resumeGame = $("#resumeGame"),
+    $restartGame = $("#restartGame"),
+    $returnToLogin = $("#returnToLogin"),
+    $showHelp = $("#showHelp"),
+    $showLeaderboard = $("#showLeaderboard"),
+    $toggleSound = $("#toggleSound"),
+    $selectLevel = $("#selectLevel"),
+    $levelModal = $("#levelModal"),
+    $closeLevel = $("#closeLevel"),
+    $logoutBtn = $("#logoutBtn"),
         healing = [true,true],
         healAudio = $(".healAudio"),
         MageAudio = $(".MageAudio"),
@@ -1272,6 +1292,10 @@ function game(){
         $helpModal.css("display", "block");
     });
     
+    $showLeaderboard.click(function() {
+        window.open("leaderboard.html", "_blank");
+    });
+    
     $selectLevel.click(function() {
         $mainMenu.css("display", "none");
         $levelModal.css("display", "block");
@@ -1279,6 +1303,47 @@ function game(){
     
     $closeLevel.click(function() {
         $levelModal.css("display", "none");
+    });
+    
+    // 退出登录按钮事件处理
+    $(document).on('click', '#logoutBtn', function() {
+        console.log('退出按钮被点击'); // 调试日志
+        
+        // 检查是否是游客模式
+        const isGuestMode = localStorage.getItem('guestMode') === 'true';
+        console.log('是否为游客模式:', isGuestMode); // 调试日志
+        
+        // 显示确认对话框
+        if (isGuestMode) {
+            if (confirm('您确定要退出游戏吗？')) {
+                console.log('用户确认退出，跳转到登录页面'); // 调试日志
+                // 跳转到登录页面
+                window.location.href = 'login.html';
+            }
+        } else {
+            // 用户已登录，先尝试登出
+            if (confirm('您确定要退出登录吗？')) {
+                console.log('用户确认退出，执行登出操作'); // 调试日志
+                // 尝试使用Supabase登出
+                if (typeof window.userDataManager !== 'undefined' && window.userDataManager.signOut) {
+                    window.userDataManager.signOut().then(() => {
+                        // 清除本地存储
+                        localStorage.removeItem('user');
+                        // 跳转到登录页面
+                        window.location.href = 'login.html';
+                    }).catch(error => {
+                        console.error('登出失败:', error);
+                        // 即使登出失败也清除本地存储并跳转
+                        localStorage.removeItem('user');
+                        window.location.href = 'login.html';
+                    });
+                } else {
+                    // 直接清除本地存储并跳转
+                    localStorage.removeItem('user');
+                    window.location.href = 'login.html';
+                }
+            }
+        }
     });
     
     // 关卡选择功能
@@ -1289,40 +1354,40 @@ function game(){
         
         // 根据选择的关卡设置背景图，确保自适应大小
         if(currentLevel === 0) { // 第一关卡（索引为0）
-            $("#back").css("background-image", "url(img/steve.art/background1.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background1.png)");
             $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse1.png)");
-            $("#rightHouse").css("background-image", "url(img/steve.art/rightHouse1.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse1.png)");
+            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse1.png)");
         } else if(currentLevel === 1) { // 第二关卡（索引为1）
-            $("#back").css("background-image", "url(img/steve.art/background2.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background2.png)");
             $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse2.png)");
-            $("#rightHouse").css("background-image", "url(img/steve.art/rightHouse2.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse2.png)");
+            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse2.png)");
         } else if(currentLevel === 2) { // 第三关卡（索引为2）
-            $("#back").css("background-image", "url(img/steve.art/background3.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background3.png)");
             $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse3.png)");
-            $("#rightHouse").css("background-image", "url(img/steve.art/rightHouse3.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse3.png)");
+            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse3.png)");
         } else if(currentLevel === 3) { // 第四关卡（索引为3）
-            $("#back").css("background-image", "url(img/steve.art/background4.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background4.png)");
             $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse4.png)");
-            $("#rightHouse").css("background-image", "url(img/steve.art/rightHouse4.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse4.png)");
+            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse4.png)");
         } else if(currentLevel === 4) { // 第五关卡（索引为4）
-            $("#back").css("background-image", "url(img/steve.art/background5.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background5.png)");
             $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse5.png)");
-            $("#rightHouse").css("background-image", "url(img/steve.art/rightHouse5.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse5.png)");
+            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse5.png)");
         } else if(currentLevel === 5) { // 第六关卡（索引为5）
-            $("#back").css("background-image", "url(img/steve.art/background6.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background6.png)");
             $("#back").css("background-size", "100% 100%");
             $("#back").css("background-position", "center center");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse6.png)");
-            $("#rightHouse").css("background-image", "url(img/steve.art/rightHouse6.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse6.png)");
+            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse6.png)");
         } else { // 其他关卡使用默认背景
-            $("#back").css("background-image", "url(img/steve.art/background.png)");
+            $("#back").css("background-image", "url(../assets/images/backgrounds/background1.png)");
             $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(img/steve.art/leftHouse.png)");
+            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse1.png)");
         }
         
         // 为所有关卡设置统一的rightHouse大小，确保与第一关卡显示效果一致
@@ -1401,7 +1466,7 @@ function game(){
         if (mechanician.dir === "left") {
             self.xspeed *= -1;
         }
-        self.have.css("background-image", "url(img/steve.art/grenade" + self.effectNumber + ".png)");
+        self.have.css("background-image", "url(../assets/images/effects/grenade" + self.effectNumber + ".png)");
 
         this.attack0 = function() {//bleeding 300 dmg
             blood(mage, 12, 5, 5, 5);
@@ -2141,5 +2206,11 @@ function game(){
     comboShoot = new ComboShoot(0);
     comboShoot.boom();
     comboShoot.boom();
+    
+    // 设置全局函数，以便game-integration.js可以访问
+    window.round = round;
+    // death函数已经在前面设置为全局函数
+    window.mage = mage;
+    window.mechanician = mechanician;
 }
 $(window).ready(game());

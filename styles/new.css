@@ -44,13 +44,13 @@ body{
 .one{
     position:absolute;
     left:300px;
-    background-image:url(img/mage.png);
+    background-image:url(../assets/images/characters/mage.png);
 }
 
 .two{
     position:absolute;
     left:1200px;
-    background-image:url(img/mechanician.png);
+    background-image:url(../assets/images/characters/mechanician.png);
 }
 
 .line{
@@ -66,7 +66,7 @@ body{
 
 .tt{
     position: absolute;
-    background:url(img/gunFire.png) no-repeat;
+    background:url(../assets/images/effects/gunFire.png) no-repeat;
     background-position: center;
     background-size: cover;
     height: 55px;
@@ -76,7 +76,7 @@ body{
 }
 
 .meteor{
-    background: url(img/fire.gif) no-repeat;
+    background: url(../assets/images/effects/fire.gif) no-repeat;
     height: 110px;
     width:135px;
     position:absolute;
@@ -94,7 +94,7 @@ body{
     width:74px;
     bottom:-500px;
     left:300px;
-    background-image: url(img/shield.png);
+    background-image: url(../assets/images/effects/shield.png);
     background-position: center;
     background-size: cover;
 /*    z-index: 2;*/
@@ -137,7 +137,7 @@ body{
     height: 40px;
     width:35px;
     transform: rotate(15deg);
-    background-image: url(img/bag.png);
+    background-image: url(../assets/images/effects/bag.png);
     background-size: cover;
     background-position: center;
     bottom:460px;
@@ -146,7 +146,7 @@ body{
 }
 
 .bottle{
-    background-image: url(img/bottle.png);
+    background-image: url(../assets/images/effects/bottle.png);
     left:200px;
     bottom:110px;
     width:20px;
@@ -254,6 +254,39 @@ body{
     transform: scale(1.1);
     box-shadow: 0 0 15px rgba(200, 50, 50, 0.3);
     color: #fff;
+}
+
+.logout-btn {
+    position: fixed !important;
+    top: 20px !important;
+    right: 140px !important;
+    width: 50px !important;
+    height: 50px !important;
+    background: linear-gradient(135deg, #d32f2f, #b71c1c);
+    border-radius: 50%;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 101 !important;
+    transition: all 0.3s ease;
+    border: 2px solid #8b0000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    color: #fff;
+}
+
+.logout-btn:hover {
+    background: linear-gradient(135deg, #e53935, #c62828);
+    border-color: #a52a2a;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(211, 47, 47, 0.5);
+    color: #fff;
+}
+
+/* 确保退出按钮在最上层 */
+#logoutBtn {
+    z-index: 9999 !important;
 }
 
 .menu-toggle {
@@ -807,7 +840,7 @@ body{
 }
 
 .enemy{
-    background-image: url(img/servant.png);
+    background-image: url(../assets/images/characters/servant.png);
     background-size: cover;
     background-position: center;
     position: absolute;
@@ -822,7 +855,7 @@ body{
     top: 150px;
     left: 150px;
     transform: rotate(25deg);
-    background-image: url(img/servantFire.gif);
+    background-image: url(../assets/images/characters/servantFire.gif);
     background-size: cover;
     background-position: center;
     border-radius: 50%;
@@ -834,7 +867,7 @@ body{
     height: 50px;
     top: 100px;
     left: 100px;
-    background-image: url(img/terrorDrone.png);
+    background-image: url(../assets/images/characters/terrorDrone.png);
     background-size: cover;
     background-position: center;
     transition: none;
@@ -1031,7 +1064,7 @@ body{
     height: 30px;
     width: 30px;
     bottom: 15px;
-    background-image:url(img/logo.png);
+    background-image:url(../assets/images/logo.png);
     background-size: cover;
     background-position: center;
 }
@@ -1051,7 +1084,7 @@ body{
     width: 30%;
     height: 43%;
     bottom: 14%;
-    background-image: url(img/steve.art/leftHouse.png);
+    background-image: url(../assets/images/backgrounds/leftHouse.png);
     background-size: 100% 100%;
     background-repeat: no-repeat;
 /*    z-index: -3;*/
@@ -1063,7 +1096,7 @@ body{
     width: 43%;
     height: 100%;
     bottom: -10%;
-    background-image: url(img/steve.art/rightHouse.png);
+    background-image: url(../assets/images/backgrounds/rightHouse.png);
     background-size: 100% 100%;
     background-repeat: no-repeat;
 /*    z-index: -3;*/
@@ -1084,7 +1117,7 @@ body{
     top: 0;
     width: 100%;
     height: 100%;
-    background-image: url(img/steve.art/background.png);
+    background-image: url(../assets/images/backgrounds/background.png);
     background-size: 100% 100%;
     background-position: center;
     background-repeat: no-repeat;
