@@ -1,5 +1,144 @@
 /*global $*/
 /*jshint browser:true, esnext:true*/
+
+// 全局音频对象
+let mainMenuBGM;
+let mapClickSound;
+
+// 背景音乐淡出效果函数
+function fadeOutBGM() {
+    if (!mainMenuBGM) return;
+    
+    const fadeDuration = 2000; // 淡出持续时间（毫秒）
+    const fadeStep = 50; // 每次调整音量的间隔时间（毫秒）
+    const totalSteps = fadeDuration / fadeStep;
+    const volumeStep = mainMenuBGM.volume / totalSteps;
+    
+    let currentStep = 0;
+    const fadeInterval = setInterval(() => {
+        if (currentStep >= totalSteps) {
+            // 淡出完成，停止音乐
+            clearInterval(fadeInterval);
+            mainMenuBGM.pause();
+            mainMenuBGM.currentTime = 0;
+            return;
+        }
+        
+        // 降低音量
+        mainMenuBGM.volume -= volumeStep;
+        currentStep++;
+    }, fadeStep);
+}
+
+// 加载页面控制函数
+function showLoadingPage() {
+    const loadingPage = document.getElementById('loadingPage');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingPercentage = document.getElementById('loadingPercentage');
+    
+    if (loadingPage) {
+        loadingPage.style.display = 'flex';
+    }
+    
+    // 模拟加载进度
+    let progress = 0;
+    const loadingSpeed = 20; // 加载动画速度（毫秒）
+    const loadingInterval = setInterval(() => {
+        progress += Math.floor(Math.random() * 5) + 1;
+        
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(loadingInterval);
+            
+            // 加载完成后隐藏加载页面
+            setTimeout(() => {
+                hideLoadingPage();
+            }, 500);
+        }
+        
+        // 更新加载条和百分比
+        if (loadingBar) {
+            loadingBar.style.width = progress + '%';
+        }
+        
+        if (loadingPercentage) {
+            loadingPercentage.textContent = progress + '%';
+        }
+    }, loadingSpeed);
+}
+
+// 隐藏加载页面函数
+function hideLoadingPage() {
+    const loadingPage = document.getElementById('loadingPage');
+    
+    if (loadingPage) {
+        loadingPage.style.display = 'none';
+    }
+}
+
+// 主页面背景音乐控制
+$(document).ready(function() {
+    // 获取主页面背景音频元素
+    mainMenuBGM = document.getElementById('mainMenuBGM');
+    
+    // 退出按钮功能已移除
+    
+    // 创建地图点击音效的Audio对象
+    mapClickSound = new Audio('../assets/sounds/effects/click.mp3');
+    mapClickSound.volume = 0.7;
+    
+    if (mainMenuBGM) {
+        // 播放背景音频
+        mainMenuBGM.volume = 0.5; // 设置音量为50%，避免过于突出
+        mainMenuBGM.play().catch(e => console.log("背景音乐自动播放被阻止，需要用户交互"));
+        
+        // 主页面和地图选择界面的背景音乐控制
+        function playMainMenuBGM() {
+            // 检查是否在主页面或地图选择界面
+            const isMainMenuVisible = document.getElementById('gameMainMenu').style.display !== 'none';
+            const isMapSelectionVisible = document.getElementById('mapSelection').style.display !== 'none';
+            
+            if (isMainMenuVisible || isMapSelectionVisible) {
+                mainMenuBGM.play().catch(e => console.log("背景音乐播放失败"));
+            } else {
+                // 不在主页面或地图选择界面时，停止背景音乐
+                mainMenuBGM.pause();
+                mainMenuBGM.currentTime = 0; // 重置到开始位置
+            }
+        }
+        
+        // 监听主菜单和地图选择界面显示状态变化
+        const mainMenuObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    playMainMenuBGM();
+                }
+            });
+        });
+        
+        // 观察主菜单和地图选择界面的样式变化
+        if (document.getElementById('gameMainMenu')) {
+            mainMenuObserver.observe(document.getElementById('gameMainMenu'), { attributes: true });
+        }
+        
+        if (document.getElementById('mapSelection')) {
+            mainMenuObserver.observe(document.getElementById('mapSelection'), { attributes: true });
+        }
+        
+        // 用户交互时播放背景音乐（解决浏览器自动播放限制）
+        document.addEventListener('click', function() {
+            if (mainMenuBGM.paused) {
+                const isMainMenuVisible = document.getElementById('gameMainMenu').style.display !== 'none';
+                const isMapSelectionVisible = document.getElementById('mapSelection').style.display !== 'none';
+                
+                if (isMainMenuVisible || isMapSelectionVisible) {
+                    mainMenuBGM.play();
+                }
+            }
+        }, { once: true });
+    }
+});
+
 //AI mode
 var beforeColi = [];
 function collisionCheak(obj1, obj2, coliNumber) {
@@ -50,15 +189,20 @@ function randomNumberAtoB(a) {
 //AI mode
 
 function game(){
-    var world,trun = 1,st = false;
+    var trun = 1,st = false;
     // 添加关卡系统
     var levels = ["城镇广场", "峭壁之战", "地下矿井", "天空之城", "火山熔岩", "冰雪要塞"];
     var currentLevel = 0; // 当前关卡索引（0-5）
+    var selectedMap = -1; // 选中的地图，初始值为-1表示未选择
+    var gameStarted = false; // 游戏是否已开始
+    var maxRounds = 3; // 最大回合数（2K-1，K=2时为3）
+    var winsRequired = 2; // 获胜所需的回合数，修改为2，实现真正的三局两胜制
     
     // 设置全局变量，供game-integration.js使用
     window.trun = trun;
     window.currentLevel = currentLevel;
     window.st = st;
+    window.selectedMap = selectedMap;
     function Control1() {
         this.x = 300;
         this.y = 100;
@@ -850,21 +994,29 @@ function game(){
     }
 
     function death(who){
+        // 检查游戏是否已结束，防止重复处理
+        if(mage.win >= winsRequired || mechanician.win >= winsRequired){
+            return;
+        }
+        
         // 更新全局变量
         window.trun = trun;
         window.currentLevel = currentLevel;
         window.st = st;
+        window.selectedMap = selectedMap;
         
+        // 停止当前播放的背景音乐
         if (isSoundEnabled) {
             bgm.each(function() {
                 this.pause();
+                this.currentTime = 0;
             });
         }
         st = false;
-        trun += 1;
-        // 更新当前关卡索引
-        currentLevel = (trun - 1) % 6; // 循环使用6个关卡
+        // 注意：不再循环使用关卡，保持当前选中的地图
+        // currentLevel = (trun - 1) % 6; // 注释掉这行，不再循环使用6个关卡
         who.win += 1;
+        trun += 1;
         mage.energy = 0;
         mechanician.energy = 0;
         if(who.name === "mage"){
@@ -876,17 +1028,56 @@ function game(){
         if(mage.servant){
             en.alive = false;
         }
-        $winner.html("<p>"+ who.name + " win!</p>");
+        $winner.html("<p>"+ who.name + " 赢得此回合!</p>");
         $gg.show();
         
-        if(who.win !== 2){
+        // 检查是否有玩家达到获胜所需局数（三局两胜制）
+        if(who.win >= winsRequired){
+            $winner.html("<p>"+ who.name + " 以 " + who.win + "/" + trun + " 获得最终胜利!</p>");
+            $winner.css("color","red");
+            $replay.show();
+            
+            // 根据获胜者显示对应的胜利视频
+            if(who.name === "mage"){
+                $mageWinVideo.show();
+                $mechanicianWinVideo.hide();
+            } else {
+                $mechanicianWinVideo.show();
+                $mageWinVideo.hide();
+            }
+            
+            // 游戏结束后重置地图选择
+            selectedMap = -1;
+            gameStarted = false;
+            window.selectedMap = selectedMap;
+        } else if(trun <= maxRounds){
+            // 未达到获胜局数且未达到最大回合数，继续下一局
+            $winner.html("<p>"+ who.name + " 赢得此回合! (" + who.win + "/" + winsRequired + ")</p>");
              setTimeout(function(){
                 $gg.hide();
                 round();
             },5500);
         } else {
+            // 达到最大回合数但无人达到获胜局数（理论上不可能）
+            // 此时判定总分最高者获胜
+            var finalWinner = mage.win > mechanician.win ? mage : mechanician;
+            $winner.html("<p>"+ finalWinner.name + " 以 " + finalWinner.win + "/" + maxRounds + " 获得最终胜利!</p>");
             $winner.css("color","red");
             $replay.show();
+            
+            // 根据获胜者显示对应的胜利视频
+            if(finalWinner.name === "mage"){
+                $mageWinVideo.show();
+                $mechanicianWinVideo.hide();
+            } else {
+                $mechanicianWinVideo.show();
+                $mageWinVideo.hide();
+            }
+            
+            // 游戏结束后重置地图选择
+            selectedMap = -1;
+            gameStarted = false;
+            window.selectedMap = selectedMap;
         }
     }
     
@@ -898,6 +1089,26 @@ function game(){
         window.trun = trun;
         window.currentLevel = currentLevel;
         window.st = st;
+        window.selectedMap = selectedMap;
+        
+        // 如果还未选择地图，则显示主界面
+        if (selectedMap === -1) {
+            $('#gameMainMenu').css('display', 'block');
+            $('#mapSelection').css('display', 'none');
+            return;
+        }
+        
+        // 如果是第一回合，确保重置玩家的胜利计数
+        if(trun === 1){
+            mage.win = 0;
+            mechanician.win = 0;
+        }
+        
+        // 如果是第一回合，表示游戏刚开始，设置当前关卡为选中的地图
+        if (trun === 1) {
+            currentLevel = selectedMap;
+            gameStarted = true;
+        }
         
         // 停止所有BGM，确保只有当前关卡的BGM在播放
         bgm.each(function() {
@@ -909,104 +1120,53 @@ function game(){
         comboShoot.boom();
         $start.show();
         
-        // 根据当前关卡选择音效
-        var audioIndex;
-        if(currentLevel === 0) {
-            // 第一关卡使用round1.mp3
-            audioIndex = 0;
-        } else if(currentLevel === 1) {
-            // 第二关卡使用round2.mp3
-            audioIndex = 1;
-        } else if(currentLevel === 2) {
-            // 第三关卡使用round3.mp3
-            audioIndex = 2;
-        } else if(currentLevel === 3) {
-            // 第四关卡使用round4.mp3
-            audioIndex = 4;
-        } else if(currentLevel === 4) {
-            // 第五关卡使用round5.mp3
-            audioIndex = 5;
-        } else if(currentLevel === 5) {
-            // 第六关卡使用round6.mp3
-            audioIndex = 6;
-        } else {
-            // 其他关卡使用现有的音效循环
-            audioIndex = (trun - 1) % 3;
+        // 更新回合显示
+        $('.round-number').text(`第 ${trun}/${maxRounds} 回合`);
+        $('.map-name').text(levels[currentLevel]);
+        
+        // 停止所有BGM，确保只有当前关卡的BGM在播放
+        bgm.each(function() {
+            this.pause();
+            this.currentTime = 0;
+        });
+        
+        // 播放回合开始音效
+        var roundAudioIndex = trun - 1; // 回合音效索引 (0: round1, 1: round2, 2: round3)
+        
+        // 如果大于2，循环使用已有的音效
+        if (roundAudioIndex > 2) {
+            roundAudioIndex = roundAudioIndex % 3;
         }
         
-        // 播放关卡开始音效
-        var currentRoundAudio = roundAudio[audioIndex];
+        var currentRoundAudio = roundAudio[roundAudioIndex];
         playAudio(currentRoundAudio);
         
-        // 为特定关卡添加特殊处理：关卡音效播放结束后播放BGM
-        if(currentLevel === 0) {
-            // 移除可能存在的旧事件监听器
-            currentRoundAudio.removeEventListener('ended', playBGM1);
-            // 添加新的事件监听器
-            currentRoundAudio.addEventListener('ended', playBGM1);
-        } else if(currentLevel === 1) {
-            // 移除可能存在的旧事件监听器
-            currentRoundAudio.removeEventListener('ended', playBGM2);
-            // 添加新的事件监听器
-            currentRoundAudio.addEventListener('ended', playBGM2);
-        } else if(currentLevel === 2) {
-            // 移除可能存在的旧事件监听器
-            currentRoundAudio.removeEventListener('ended', playBGM3);
-            // 添加新的事件监听器
-            currentRoundAudio.addEventListener('ended', playBGM3);
-        } else if(currentLevel === 3) {
-            // 移除可能存在的旧事件监听器
-            currentRoundAudio.removeEventListener('ended', playBGM4);
-            // 添加新的事件监听器
-            currentRoundAudio.addEventListener('ended', playBGM4);
-        } else if(currentLevel === 4) {
-            // 移除可能存在的旧事件监听器
-            currentRoundAudio.removeEventListener('ended', playBGM5);
-            // 添加新的事件监听器
-            currentRoundAudio.addEventListener('ended', playBGM5);
-        } else if(currentLevel === 5) {
-            // 移除可能存在的旧事件监听器
-            currentRoundAudio.removeEventListener('ended', playBGM6);
-            // 添加新的事件监听器
-            currentRoundAudio.addEventListener('ended', playBGM6);
-        } else {
-            // 其他关卡直接播放默认BGM
-            if(currentLevel === 5) {
-                playAudio(bgm[1]); // 第六关卡使用BGM6.mp3
+        // 设置回调函数，在回合音效播放结束后播放对应地图的BGM
+        currentRoundAudio.addEventListener('ended', function() {
+            // 播放对应地图的背景音乐
+            var mapBGM;
+            if(selectedMap === 0) {
+                mapBGM = bgm[0]; // 城镇广场使用BGM1.mp3
+            } else if(selectedMap === 1) {
+                mapBGM = bgm[2]; // 峭壁之战使用BGM2.mp3
+            } else if(selectedMap === 2) {
+                mapBGM = bgm[3]; // 地下矿井使用BGM3.mp3
+            } else if(selectedMap === 3) {
+                mapBGM = bgm[4]; // 天空之城使用BGM4.mp3
+            } else if(selectedMap === 4) {
+                mapBGM = bgm[5]; // 火山熔岩使用BGM5.mp3
+            } else if(selectedMap === 5) {
+                mapBGM = bgm[1]; // 冰雪要塞使用BGM6.mp3
+            } else {
+                // 默认使用BGM1
+                mapBGM = bgm[0];
             }
-        }
+            playAudio(mapBGM);
+        }, { once: true }); // 确保事件监听器只触发一次
         
-        // 播放BGM1的辅助函数
-        function playBGM1() {
-            playAudio(bgm[0]); // 第一关卡使用BGM1.mp3
-        }
-        
-        // 播放BGM2的辅助函数
-        function playBGM2() {
-            playAudio(bgm[2]); // 第二关卡使用BGM2.mp3
-        }
-        
-        // 播放BGM3的辅助函数
-        function playBGM3() {
-            playAudio(bgm[3]); // 第三关卡使用BGM3.mp3
-        }
-        
-        // 播放BGM4的辅助函数
-        function playBGM4() {
-            playAudio(bgm[4]); // 第四关卡使用BGM4.mp3
-        }
-        
-        // 播放BGM5的辅助函数
-        function playBGM5() {
-            playAudio(bgm[5]); // 第五关卡使用BGM5.mp3
-        }
-        
-        // 播放BGM6的辅助函数
-        function playBGM6() {
-            playAudio(bgm[1]); // 第六关卡使用BGM6.mp3
-        }
-        // 显示关卡名称
-        $start.html("<p>" + (currentLevel + 1) + " " + levels[currentLevel] + "</p>");
+
+        // 显示地图名称
+        $start.html("<p>" + levels[currentLevel] + "</p>");
         
         // 根据当前关卡设置背景图，确保自适应大小
         if(currentLevel === 0) { // 第一关卡（索引为0）
@@ -1054,12 +1214,46 @@ function game(){
             "background-size": "100% 100%"
         });
         
+        // 动态切换地面样式类
+        $ ("body").removeClass("map-0 map-1 map-2 map-3 map-4 map-5");
+        $ ("body").addClass("map-" + currentLevel);
+        
+        // 根据当前地图添加对应的样式类
+        $start.removeClass("map-0 map-1 map-2 map-3 map-4 map-5");
+        $start.addClass("map-" + currentLevel);
+        
         setTimeout(function(){
+            // 2秒后播放"战斗"音效，然后继续播放对应地图的BGM
             playAudio(roundAudio[3]);
             $start.html("<p>Fight!</p>");
+            $start.addClass("fight");
+            
+            // 确保在"战斗"音效播放结束后继续播放对应地图的BGM
+            roundAudio[3].addEventListener('ended', function() {
+                // 重新播放对应地图的背景音乐
+                var mapBGM;
+                if(selectedMap === 0) {
+                    mapBGM = bgm[0]; // 城镇广场使用BGM1.mp3
+                } else if(selectedMap === 1) {
+                    mapBGM = bgm[2]; // 峭壁之战使用BGM2.mp3
+                } else if(selectedMap === 2) {
+                    mapBGM = bgm[3]; // 地下矿井使用BGM3.mp3
+                } else if(selectedMap === 3) {
+                    mapBGM = bgm[4]; // 天空之城使用BGM4.mp3
+                } else if(selectedMap === 4) {
+                    mapBGM = bgm[5]; // 火山熔岩使用BGM5.mp3
+                } else if(selectedMap === 5) {
+                    mapBGM = bgm[1]; // 冰雪要塞使用BGM6.mp3
+                } else {
+                    // 默认使用BGM1
+                    mapBGM = bgm[0];
+                }
+                playAudio(mapBGM);
+            }, { once: true });
         },2000);
         setTimeout(function(){
             $start.hide();
+            $start.removeClass("fight");
             mage.energy = 0;
             mechanician.energy = 0;
             st = true;
@@ -1095,22 +1289,14 @@ function game(){
         $kit = $(".kit"),
         $bottle = $(".bottle"),
         $winner = $(".winner"),
-        $soundToggle = $("#soundToggle"),
-        $helpToggle = $("#helpToggle"),
-        $helpModal = $("#helpModal"),
-        $closeHelp = $("#closeHelp"),
-    $menuToggle = $("#menuToggle"),
-    $mainMenu = $("#mainMenu"),
-    $resumeGame = $("#resumeGame"),
-    $restartGame = $("#restartGame"),
-    $returnToLogin = $("#returnToLogin"),
-    $showHelp = $("#showHelp"),
-    $showLeaderboard = $("#showLeaderboard"),
-    $toggleSound = $("#toggleSound"),
-    $selectLevel = $("#selectLevel"),
-    $levelModal = $("#levelModal"),
-    $closeLevel = $("#closeLevel"),
-    $logoutBtn = $("#logoutBtn"),
+        $mageWinVideo = $("#mageWinVideo"),
+        $mechanicianWinVideo = $("#mechanicianWinVideo"),
+        $volumeControl = $("#volumeControl"),
+        $volumeIcon = $("#volumeIcon"),
+        $volumeSlider = $("#volumeSlider"),
+        $volumeValue = $("#volumeValue"),
+        $volumePresets = $(".volume-preset-btn"),
+
         healing = [true,true],
         healAudio = $(".healAudio"),
         MageAudio = $(".MageAudio"),
@@ -1118,6 +1304,8 @@ function game(){
         bgm = $(".BGM"),
         roundAudio = $(".roundAudio"),
         isSoundEnabled = true; // 添加声音开关状态变量
+        currentVolume = 70; // 当前音量，初始值为70%
+        savedVolume = 70; // 保存的音量，用于静音后恢复
    
     // 自适应缩放功能
     function resizeGame() {
@@ -1147,261 +1335,14 @@ function game(){
     $start.hide();
     $replay.hide();
     $replay.click(function(){
-        location.reload();
-    });
-    
-    // 音乐开关功能
-    $soundToggle.click(function() {
-        isSoundEnabled = !isSoundEnabled;
-        if (isSoundEnabled) {
-            // 恢复所有音频播放
-            $soundToggle.removeClass("muted");
-            $soundToggle.html("🔊");
-            
-            // 恢复BGM（如果游戏正在进行中）
-            if (st) { 
-                bgm[0].play();
-            }
-        } else {
-            // 静音所有音频
-            $soundToggle.addClass("muted");
-            $soundToggle.html("🔇");
-            
-            // 暂停所有音频
-            bgm.each(function() {
-                this.pause();
-            });
-            MageAudio.each(function() {
-                this.pause();
-                this.currentTime = 0; // 重置音频到开始位置
-            });
-            MechAudio.each(function() {
-                this.pause();
-                this.currentTime = 0;
-            });
-            healAudio.each(function() {
-                this.pause();
-                this.currentTime = 0;
-            });
-            roundAudio.each(function() {
-                this.pause();
-                this.currentTime = 0;
-            });
-        }
-    });
-    
-    // 创建一个辅助函数来播放音频，仅在声音开启时播放
-    function playAudio(audioElement) {
-        if (isSoundEnabled) {
-            audioElement.play();
-        }
-    }
-    
-    // 重写所有音频元素的play方法，使其检查音量开关
-    function initAudioElements() {
-        MageAudio.each(function() {
-            const originalPlay = this.play;
-            this.play = function() {
-                if (isSoundEnabled) {
-                    return originalPlay.call(this);
-                }
-            };
-        });
-        
-        MechAudio.each(function() {
-            const originalPlay = this.play;
-            this.play = function() {
-                if (isSoundEnabled) {
-                    return originalPlay.call(this);
-                }
-            };
-        });
-        
-        healAudio.each(function() {
-            const originalPlay = this.play;
-            this.play = function() {
-                if (isSoundEnabled) {
-                    return originalPlay.call(this);
-                }
-            };
-        });
-        
-        roundAudio.each(function() {
-            const originalPlay = this.play;
-            this.play = function() {
-                if (isSoundEnabled) {
-                    return originalPlay.call(this);
-                }
-            };
-        });
-        
-        bgm.each(function() {
-            const originalPlay = this.play;
-            this.play = function() {
-                if (isSoundEnabled) {
-                    return originalPlay.call(this);
-                }
-            };
-        });
-    }
-    
-    // 初始化音频元素
-    initAudioElements();
-    
-    // 技能介绍弹窗功能
-    $helpToggle.click(function() {
-        $helpModal.css("display", "block");
-    });
-    
-    $closeHelp.click(function() {
-        $helpModal.css("display", "none");
-    });
-    
-    // 点击弹窗外部关闭弹窗
-    $(window).click(function(event) {
-        if (event.target === $helpModal[0]) {
-            $helpModal.css("display", "none");
-        }
-        if (event.target === $levelModal[0]) {
-            $levelModal.css("display", "none");
-        }
-        if (event.target === $mainMenu[0]) {
-            $mainMenu.css("display", "none");
-        }
-    });
-    
-    // 主菜单功能
-    $menuToggle.click(function() {
-        $mainMenu.css("display", "block");
-    });
-    
-    $resumeGame.click(function() {
-        $mainMenu.css("display", "none");
-    });
-    
-    $restartGame.click(function() {
-        location.reload();
-    });
-    
-    $returnToLogin.click(function() {
-        window.location.href = "../index.html";
-    });
-    
-    $showHelp.click(function() {
-        $mainMenu.css("display", "none");
-        $helpModal.css("display", "block");
-    });
-    
-    $showLeaderboard.click(function() {
-        window.open("leaderboard.html", "_blank");
-    });
-    
-    $selectLevel.click(function() {
-        $mainMenu.css("display", "none");
-        $levelModal.css("display", "block");
-    });
-    
-    $closeLevel.click(function() {
-        $levelModal.css("display", "none");
-    });
-    
-    // 退出登录按钮事件处理
-    $(document).on('click', '#logoutBtn', function() {
-        console.log('退出按钮被点击'); // 调试日志
-        
-        // 检查是否是游客模式
-        const isGuestMode = localStorage.getItem('guestMode') === 'true';
-        console.log('是否为游客模式:', isGuestMode); // 调试日志
-        
-        // 显示确认对话框
-        if (isGuestMode) {
-            if (confirm('您确定要退出游戏吗？')) {
-                console.log('用户确认退出，跳转到登录页面'); // 调试日志
-                // 跳转到登录页面
-                window.location.href = 'login.html';
-            }
-        } else {
-            // 用户已登录，先尝试登出
-            if (confirm('您确定要退出登录吗？')) {
-                console.log('用户确认退出，执行登出操作'); // 调试日志
-                // 尝试使用Supabase登出
-                if (typeof window.userDataManager !== 'undefined' && window.userDataManager.signOut) {
-                    window.userDataManager.signOut().then(() => {
-                        // 清除本地存储
-                        localStorage.removeItem('user');
-                        // 跳转到登录页面
-                        window.location.href = 'login.html';
-                    }).catch(error => {
-                        console.error('登出失败:', error);
-                        // 即使登出失败也清除本地存储并跳转
-                        localStorage.removeItem('user');
-                        window.location.href = 'login.html';
-                    });
-                } else {
-                    // 直接清除本地存储并跳转
-                    localStorage.removeItem('user');
-                    window.location.href = 'login.html';
-                }
-            }
-        }
-    });
-    
-    // 关卡选择功能
-    $(".level-item").click(function() {
-        var selectedLevel = parseInt($(this).data("level"));
-        currentLevel = selectedLevel;
-        trun = selectedLevel + 1; // 设置回合数对应选择的关卡
-        
-        // 根据选择的关卡设置背景图，确保自适应大小
-        if(currentLevel === 0) { // 第一关卡（索引为0）
-            $("#back").css("background-image", "url(../assets/images/backgrounds/background1.png)");
-            $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse1.png)");
-            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse1.png)");
-        } else if(currentLevel === 1) { // 第二关卡（索引为1）
-            $("#back").css("background-image", "url(../assets/images/backgrounds/background2.png)");
-            $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse2.png)");
-            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse2.png)");
-        } else if(currentLevel === 2) { // 第三关卡（索引为2）
-            $("#back").css("background-image", "url(../assets/images/backgrounds/background3.png)");
-            $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse3.png)");
-            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse3.png)");
-        } else if(currentLevel === 3) { // 第四关卡（索引为3）
-            $("#back").css("background-image", "url(../assets/images/backgrounds/background4.png)");
-            $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse4.png)");
-            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse4.png)");
-        } else if(currentLevel === 4) { // 第五关卡（索引为4）
-            $("#back").css("background-image", "url(../assets/images/backgrounds/background5.png)");
-            $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse5.png)");
-            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse5.png)");
-        } else if(currentLevel === 5) { // 第六关卡（索引为5）
-            $("#back").css("background-image", "url(../assets/images/backgrounds/background6.png)");
-            $("#back").css("background-size", "100% 100%");
-            $("#back").css("background-position", "center center");
-            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse6.png)");
-            $("#rightHouse").css("background-image", "url(../assets/images/backgrounds/rightHouse6.png)");
-        } else { // 其他关卡使用默认背景
-            $("#back").css("background-image", "url(../assets/images/backgrounds/background1.png)");
-            $("#back").css("background-size", "100% 100%");
-            $("#leftHouse").css("background-image", "url(../assets/images/backgrounds/leftHouse1.png)");
-        }
-        
-        // 为所有关卡设置统一的rightHouse大小，确保与第一关卡显示效果一致
-        $("#rightHouse").css({
-            "width": "43%",
-            "height": "100%",
-            "bottom": "-10%",
-            "background-size": "100% 100%"
-        });
-        
         // 重置游戏状态
-        st = false;
+        selectedMap = -1;
+        gameStarted = false;
+        trun = 1;
         mage.win = 0;
         mechanician.win = 0;
+        window.selectedMap = selectedMap;
+        window.trun = trun;
         
         // 重置角色状态
         mage.health = mage.healthMax;
@@ -1413,37 +1354,406 @@ function game(){
         mage.final = false;
         mechanician.final = false;
         
-        // 隐藏菜单和弹窗
-        $levelModal.css("display", "none");
+        // 显示主界面
+        $('#gameMainMenu').css('display', 'block');
+        $('#mapSelection').css('display', 'none');
+        $('.map-item').removeClass('selected');
+        $gg.hide();
+        $replay.hide();
+        // 隐藏胜利视频
+        $mageWinVideo.hide();
+        $mechanicianWinVideo.hide();
+    });
+    
+    // 音量控制功能
+    $volumeIcon.click(function() {
+        // 点击图标切换静音状态
+        if (currentVolume > 0) {
+            // 保存当前音量并静音
+            savedVolume = currentVolume;
+            currentVolume = 0;
+            $volumeSlider.val(0);
+            $volumeValue.text("0%");
+            updateVolumeIcon("🔇");
+            $volumeControl.addClass("muted");
+        } else {
+            // 恢复之前的音量
+            currentVolume = savedVolume || 70;
+            $volumeSlider.val(currentVolume);
+            $volumeValue.text(currentVolume + "%");
+            updateVolumeIcon();
+            $volumeControl.removeClass("muted");
+        }
+        updateAllAudioVolume();
+    });
+    
+    // 音量滑块变化事件
+    $volumeSlider.on('input', function() {
+        currentVolume = $(this).val();
+        $volumeValue.text(currentVolume + "%");
+        updateVolumeIcon();
+        updateAllAudioVolume();
         
-        // 如果游戏正在进行中，先停止
-        if (world) {
-            clearInterval(world);
+        // 如果用户从静音状态调整音量，自动取消静音
+        if (currentVolume > 0 && $volumeControl.hasClass("muted")) {
+            $volumeControl.removeClass("muted");
+        }
+    });
+    
+    // 音量预设按钮点击事件
+    $volumePresets.click(function() {
+        const presetVolume = parseInt($(this).data("volume"));
+        currentVolume = presetVolume;
+        $volumeSlider.val(currentVolume);
+        $volumeValue.text(currentVolume + "%");
+        updateVolumeIcon();
+        updateAllAudioVolume();
+        
+        // 如果设置了音量，取消静音状态
+        if (currentVolume > 0 && $volumeControl.hasClass("muted")) {
+            $volumeControl.removeClass("muted");
         }
         
-        // 开始选定的关卡
-        round();
+        // 添加点击反馈动画
+        $(this).addClass("active");
+        setTimeout(() => {
+            $(this).removeClass("active");
+        }, 200);
     });
     
-    $toggleSound.click(function() {
-        $soundToggle.click(); // 触发音效开关切换
-        updateMenuSoundOption();
-        $mainMenu.css("display", "none");
-    });
-    
-    // 更新菜单中的音效选项状态
-    function updateMenuSoundOption() {
-        if (isSoundEnabled) {
-            $toggleSound.html("音效开关 🔊");
+    // 更新音量图标
+    function updateVolumeIcon(customIcon) {
+        if (customIcon) {
+            $volumeIcon.text(customIcon);
+            return;
+        }
+        
+        if (currentVolume == 0) {
+            $volumeIcon.text("🔇");
+        } else if (currentVolume < 30) {
+            $volumeIcon.text("🔈");
+        } else if (currentVolume < 70) {
+            $volumeIcon.text("🔉");
         } else {
-            $toggleSound.html("音效开关 🔇");
+            $volumeIcon.text("🔊");
+        }
+        
+        // 更新滑块的背景渐变，反映当前音量位置
+        updateSliderBackground();
+    }
+    
+    // 更新滑块背景渐变
+    function updateSliderBackground() {
+        const percentage = currentVolume;
+        const color1 = percentage < 30 ? '#ff5252' : percentage < 70 ? '#ffeb3b' : '#4caf50';
+        const color2 = percentage < 30 ? '#ffeb3b' : percentage < 70 ? '#4caf50' : '#2e7d32';
+        $volumeSlider.css('background', `linear-gradient(to right, ${color1} 0%, ${color1} ${percentage}%, rgba(255,255,255,0.2) ${percentage}%, rgba(255,255,255,0.2) 100%)`);
+    }
+    
+    // 更新所有音频元素的音量，添加平滑过渡效果
+    function updateAllAudioVolume() {
+        const volume = currentVolume / 100; // 转换为0-1的范围
+        
+        // 创建平滑过渡效果
+        const fadeDuration = 200; // 毫秒
+        const steps = 20;
+        const stepTime = fadeDuration / steps;
+        
+        // 获取当前所有音频的当前音量
+        const currentVolumes = {
+            mainMenuBGM: mainMenuBGM ? mainMenuBGM.volume : 0,
+            bgm: bgm.map(function() { return this.volume; }).get(),
+            MageAudio: MageAudio.map(function() { return this.volume; }).get(),
+            MechAudio: MechAudio.map(function() { return this.volume; }).get(),
+            healAudio: healAudio.map(function() { return this.volume; }).get(),
+            roundAudio: roundAudio.map(function() { return this.volume; }).get(),
+            mapClickSound: mapClickSound ? mapClickSound.volume : 0
+        };
+        
+        // 计算每一步的音量变化
+        const volumeSteps = {
+            mainMenuBGM: (volume * 0.5 - currentVolumes.mainMenuBGM) / steps,
+            bgm: currentVolumes.bgm.map(v => (volume - v) / steps),
+            MageAudio: currentVolumes.MageAudio.map(v => (volume - v) / steps),
+            MechAudio: currentVolumes.MechAudio.map(v => (volume - v) / steps),
+            healAudio: currentVolumes.healAudio.map(v => (volume - v) / steps),
+            roundAudio: currentVolumes.roundAudio.map(v => (volume - v) / steps),
+            mapClickSound: (volume * 0.7 - currentVolumes.mapClickSound) / steps
+        };
+        
+        let currentStep = 0;
+        const fadeInterval = setInterval(() => {
+            currentStep++;
+            
+            // 更新主菜单背景音乐
+            if (mainMenuBGM) {
+                mainMenuBGM.volume = currentVolumes.mainMenuBGM + volumeSteps.mainMenuBGM * currentStep;
+            }
+            
+            // 更新BGM
+            bgm.each(function(index) {
+                this.volume = currentVolumes.bgm[index] + volumeSteps.bgm[index] * currentStep;
+            });
+            
+            // 更新其他音频元素
+            MageAudio.each(function(index) {
+                this.volume = currentVolumes.MageAudio[index] + volumeSteps.MageAudio[index] * currentStep;
+            });
+            
+            MechAudio.each(function(index) {
+                this.volume = currentVolumes.MechAudio[index] + volumeSteps.MechAudio[index] * currentStep;
+            });
+            
+            healAudio.each(function(index) {
+                this.volume = currentVolumes.healAudio[index] + volumeSteps.healAudio[index] * currentStep;
+            });
+            
+            roundAudio.each(function(index) {
+                this.volume = currentVolumes.roundAudio[index] + volumeSteps.roundAudio[index] * currentStep;
+            });
+            
+            if (mapClickSound) {
+                mapClickSound.volume = currentVolumes.mapClickSound + volumeSteps.mapClickSound * currentStep;
+            }
+            
+            // 完成过渡
+            if (currentStep >= steps) {
+                clearInterval(fadeInterval);
+            }
+        }, stepTime);
+    }
+    
+    // 初始化滑块背景
+    updateSliderBackground();
+    
+    // 创建一个辅助函数来播放音频，仅在声音开启时播放
+    function playAudio(audioElement) {
+        if (isSoundEnabled && currentVolume > 0) {
+            // 设置音量
+            audioElement.volume = currentVolume / 100;
+            audioElement.play().catch(e => {
+                console.error('音频播放失败:', e);
+                // 尝试重新加载音频
+                setTimeout(() => audioElement.load(), 500);
+            });
         }
     }
     
-    // 初始化菜单状态
-    updateMenuSoundOption();
+    // 重写所有音频元素的play方法，使其检查音量开关和音量大小
+    function initAudioElements() {
+        MageAudio.each(function() {
+            const originalPlay = this.play;
+            this.play = function() {
+                if (isSoundEnabled && currentVolume > 0) {
+                    this.volume = currentVolume / 100;
+                    return originalPlay.call(this).catch(e => {
+                        console.error('音频播放失败:', e);
+                        // 尝试重新加载音频
+                        setTimeout(() => this.load(), 500);
+                    });
+                }
+            };
+        });
+        
+        MechAudio.each(function() {
+            const originalPlay = this.play;
+            this.play = function() {
+                if (isSoundEnabled && currentVolume > 0) {
+                    this.volume = currentVolume / 100;
+                    return originalPlay.call(this);
+                }
+            };
+        });
+        
+        healAudio.each(function() {
+            const originalPlay = this.play;
+            this.play = function() {
+                if (isSoundEnabled && currentVolume > 0) {
+                    this.volume = currentVolume / 100;
+                    return originalPlay.call(this);
+                }
+            };
+        });
+        
+        roundAudio.each(function() {
+            const originalPlay = this.play;
+            this.play = function() {
+                if (isSoundEnabled && currentVolume > 0) {
+                    this.volume = currentVolume / 100;
+                    return originalPlay.call(this);
+                }
+            };
+        });
+        
+        bgm.each(function() {
+            const originalPlay = this.play;
+            this.play = function() {
+                if (isSoundEnabled && currentVolume > 0) {
+                    this.volume = currentVolume / 100;
+                    return originalPlay.call(this);
+                }
+            };
+        });
+    }
     
-    round();
+    // 初始化音频元素
+    initAudioElements();
+    
+    // 初始化音量
+    $volumeSlider.val(currentVolume);
+    $volumeValue.text(currentVolume + "%");
+    updateVolumeIcon();
+    updateAllAudioVolume();
+    
+
+    
+    // 返回地图选择按钮事件处理
+    $(document).on('click', '#logoutBtn', function(e) {
+        e.preventDefault(); // 阻止默认行为
+        
+        // 添加点击动画效果
+        $(this).addClass('clicked rotating');
+        setTimeout(() => {
+            $(this).removeClass('clicked rotating');
+        }, 800);
+        
+        // 显示确认对话框
+        if (confirm('您确定要返回地图选择界面吗？当前游戏进度将会丢失。')) {
+            console.log('用户确认返回地图选择'); // 调试日志
+            
+            // 停止所有音频
+            if (typeof bgm !== 'undefined') {
+                bgm.each(function() {
+                    this.pause();
+                    this.currentTime = 0;
+                });
+            }
+            
+            if (mainMenuBGM) {
+                mainMenuBGM.pause();
+                mainMenuBGM.currentTime = 0;
+            }
+            
+            // 重置游戏状态
+            if (typeof mage !== 'undefined') {
+                mage.win = 0;
+                mage.health = mage.healthMax;
+                mage.shield = 0;
+                mage.energy = 0;
+            }
+            
+            if (typeof mechanician !== 'undefined') {
+                mechanician.win = 0;
+                mechanician.health = mechanician.healthMax;
+                mechanician.shield = 0;
+                mechanician.energy = 0;
+            }
+            
+            // 重置回合数
+            if (typeof window.trun !== 'undefined') {
+                window.trun = 1;
+            }
+            
+            // 显示地图选择界面
+            $('#gameMainMenu').css('display', 'block');
+            $('#mapSelection').css('display', 'none');
+            $('.gg').css('display', 'none');
+            $('.replay').css('display', 'none');
+            $start.css('display', 'none');
+            
+            // 清除游戏循环
+            if (typeof world !== 'undefined') {
+                clearInterval(world);
+            }
+            
+            // 播放主菜单背景音乐
+            if (mainMenuBGM && isSoundEnabled) {
+                mainMenuBGM.volume = 0.5 * (currentVolume / 100);
+                mainMenuBGM.play().catch(e => console.log("背景音乐播放失败"));
+            }
+            
+            // 重置地图选择
+            if (typeof selectedMap !== 'undefined') {
+                selectedMap = -1;
+                window.selectedMap = selectedMap;
+            }
+            
+            // 清除地图选中状态
+            $('.map-item').removeClass('selected');
+        }
+    });
+    
+
+    
+
+    
+    // 主界面按钮事件处理
+    $('#mapSelectionBtn').click(function() {
+        $('#gameMainMenu').css('display', 'none');
+        $('#mapSelection').css('display', 'block');
+    });
+    
+    $('#helpBtnFromMain').click(function() {
+        $('#helpModal').css('display', 'block');
+    });
+    
+    $('#backToLoginBtn').click(function() {
+        window.location.href = '../index.html';
+    });
+    
+    // 地图选择界面返回主菜单按钮
+    $('#backFromMapSelectionBtn').click(function() {
+        // 添加点击动画
+        $(this).addClass('clicked');
+        setTimeout(() => {
+            $(this).removeClass('clicked');
+        }, 400);
+        
+        // 返回主菜单
+        $('#mapSelection').css('display', 'none');
+        $('#gameMainMenu').css('display', 'block');
+        
+        // 播放点击音效
+        if (mapClickSound && isSoundEnabled && currentVolume > 0) {
+            mapClickSound.currentTime = 0;
+            mapClickSound.volume = 0.7 * (currentVolume / 100);
+            mapClickSound.play();
+        }
+    });
+    
+    // 地图选择事件处理
+    $('.map-item').click(function() {
+        var selectedMapIndex = parseInt($(this).data('map'));
+        selectedMap = selectedMapIndex;
+        currentLevel = selectedMap;
+        window.selectedMap = selectedMap;
+        window.currentLevel = currentLevel;
+        
+        // 添加选中效果
+        $('.map-item').removeClass('selected');
+        $(this).addClass('selected');
+        
+        // 播放地图点击音效
+        if (mapClickSound) {
+            mapClickSound.currentTime = 0; // 重置音效播放位置
+            mapClickSound.play().catch(e => console.log('地图点击音效播放失败:', e));
+        }
+        
+        // 开始背景音乐淡出效果
+        fadeOutBGM();
+        
+        // 显示加载页面
+        showLoadingPage();
+        
+        // 延迟关闭地图选择界面并开始游戏（延长至2秒以匹配加载效果）
+        setTimeout(function() {
+            $('#mapSelection').css('display', 'none');
+            round();
+        }, 2000);
+    });
+    
+    // 游戏开始时，先不调用round()，等待用户从主界面选择地图
+    // round();
     
     $("#aiBox").append("<div id='iceShoot'></div>");
     $("#aiBox").append("<div id='boomShoot'></div>");

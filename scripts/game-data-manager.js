@@ -16,7 +16,7 @@ class GameDataManager {
     async initialize() {
         if (this.isGuestMode) {
             console.log('游客模式：游戏数据不会被保存');
-            return false;
+            return true;
         }
 
         // 等待Supabase客户端加载完成
