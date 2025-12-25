@@ -403,6 +403,8 @@
             pointer-events: none;
         }
     </style>
+    
+
     </style>
 </head>
 <body>
@@ -441,6 +443,13 @@
         
         <div id="message" class="message"></div>
     </div>
+    
+    <!-- 背景音乐 -->
+    <audio id="bgMusic" loop>
+        <source src="../assets/sounds/effects/mainMusic.mp3" type="audio/mpeg">
+    </audio>
+    
+
 
     <!-- Supabase客户端库 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -609,6 +618,8 @@
                 }
             }
         });
+        
+
     </script>
 </body>
 </html>

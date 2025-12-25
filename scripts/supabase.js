@@ -41,7 +41,7 @@ class UserDataManager {
     // 用户登录
     async signIn(email, password) {
         try {
-            const { data, error } = await supabaseClientClientClient.auth.signInWithPassword({
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: email,
                 password: password
             });
@@ -62,7 +62,7 @@ class UserDataManager {
     // 用户注册
     async signUp(email, password, username) {
         try {
-            const { data, error } = await supabaseClientClientClient.auth.signUp({
+            const { data, error } = await supabaseClient.auth.signUp({
                 email: email,
                 password: password,
                 options: {
@@ -108,7 +108,7 @@ class UserDataManager {
         }
 
         try {
-            const { data, error } = await supabaseClientClient
+            const { data, error } = await supabaseClient
                 .from('game_data')
                 .upsert({
                     user_id: this.currentUser.id,
@@ -135,7 +135,7 @@ class UserDataManager {
         }
 
         try {
-            const { data, error } = await supabaseClientClient
+            const { data, error } = await supabaseClient
                 .from('game_data')
                 .select('data')
                 .eq('user_id', this.currentUser.id)
@@ -160,7 +160,7 @@ class UserDataManager {
         }
 
         try {
-            const { data, error } = await supabaseClientClient
+            const { data, error } = await supabaseClient
                 .from('game_scores')
                 .insert({
                     user_id: this.currentUser.id,
@@ -184,14 +184,14 @@ class UserDataManager {
     // 获取排行榜
     async getLeaderboard(limit = 10) {
         try {
-            const { data, error } = await supabaseClientClient
+            const { data, error } = await supabaseClient
                 .from('game_scores')
                 .select(`
                     score,
                     level,
                     character,
                     created_at,
-                    user: profiles(username)
+                    user: profiles(username, avatar_url)
                 `)
                 .order('score', { ascending: false })
                 .limit(limit);
@@ -203,6 +203,107 @@ class UserDataManager {
             return { success: true, data };
         } catch (error) {
             console.error('获取排行榜失败:', error.message);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 获取用户资料信息
+    async getUserProfile() {
+        if (!this.currentUser) {
+            console.error('用户未登录，无法获取用户资料');
+            return null;
+        }
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('username, avatar_url, website')
+                .eq('id', this.currentUser.id)
+                .single();
+
+            if (error) {
+                throw error;
+            }
+
+            return data;
+        } catch (error) {
+            console.error('获取用户资料失败:', error.message);
+            return null;
+        }
+    }
+
+    // 更新用户资料
+    async updateUserProfile(profileData) {
+        if (!this.currentUser) {
+            console.error('用户未登录，无法更新用户资料');
+            return { success: false, error: '用户未登录' };
+        }
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .upsert({
+                    id: this.currentUser.id,
+                    ...profileData,
+                    updated_at: new Date().toISOString()
+                });
+
+            if (error) {
+                throw error;
+            }
+
+            return { success: true, data };
+        } catch (error) {
+            console.error('更新用户资料失败:', error.message);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 上传头像
+    async uploadAvatar(file) {
+        if (!this.currentUser) {
+            console.error('用户未登录，无法上传头像');
+            return { success: false, error: '用户未登录' };
+        }
+
+        try {
+            // 生成唯一文件名
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${this.currentUser.id}-${Date.now()}.${fileExt}`;
+            const filePath = `avatars/${fileName}`;
+
+            // 上传文件到存储桶
+            const { data, error } = await supabaseClient.storage
+                .from('user-avatars')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
+
+            if (error) {
+                throw error;
+            }
+
+            // 获取公共URL
+            const { data: urlData } = supabaseClient.storage
+                .from('user-avatars')
+                .getPublicUrl(filePath);
+
+            // 更新用户资料中的头像URL
+            const updateResult = await this.updateUserProfile({
+                avatar_url: urlData.publicUrl
+            });
+
+            if (!updateResult.success) {
+                throw new Error(updateResult.error);
+            }
+
+            return { 
+                success: true, 
+                url: urlData.publicUrl 
+            };
+        } catch (error) {
+            console.error('上传头像失败:', error.message);
             return { success: false, error: error.message };
         }
     }

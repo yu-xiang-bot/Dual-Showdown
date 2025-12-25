@@ -1,0 +1,7 @@
+{
+  "framework": "static",
+  "buildCommand": "",
+  "outputDirectory": ".",
+  "installCommand": "",
+  "env": {}
+}

@@ -108,6 +108,110 @@ body{
     }
 }
 
+/* 音量控制组件样式 */
+.volume-control {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 20px;
+    padding: 8px 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.volume-icon {
+    font-size: 20px;
+    margin-right: 10px;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.volume-icon:hover {
+    transform: scale(1.1);
+}
+
+.volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100px;
+    height: 6px;
+    background: linear-gradient(to right, #e64a19 0%, #ff8a65 100%);
+    border-radius: 3px;
+    outline: none;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.volume-slider:hover {
+    opacity: 1;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.volume-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+.volume-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* 音量控制响应式调整 */
+@media (max-width: 768px) {
+    .volume-control {
+        top: 15px;
+        right: 15px;
+        padding: 6px 12px;
+    }
+    
+    .volume-icon {
+        font-size: 18px;
+        margin-right: 8px;
+    }
+    
+    .volume-slider {
+        width: 80px;
+        height: 4px;
+    }
+    
+    .volume-slider::-webkit-slider-thumb {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .volume-slider::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+    }
+}
+
 .man{
     display: inline-block;
     height: 90px;

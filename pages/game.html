@@ -5,6 +5,15 @@
         <link rel = "stylesheet" href = "../styles/new.css"/>
         <link rel = "icon" href = "../favicon.ico" type = "image/x-icon" />
         <script src="../scripts/jquery.min.js"></script>
+
+        <script>
+            // 检查jQuery是否加载成功
+            if (typeof $ !== 'undefined') {
+                console.log('jQuery is loaded successfully');
+            } else {
+                console.error('jQuery is not loaded');
+            }
+        </script>
         <!-- Supabase客户端库 -->
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
         <!-- Supabase数据库连接 -->
@@ -199,26 +208,154 @@
                 <source src="../assets/sounds/effects/mainMusic.mp3" type="audio/mpeg" />
              </audio>
         </div>
-        <div class="volume-control" id="volumeControl">
-            <div class="volume-icon" id="volumeIcon">🔊</div>
-            <div class="volume-slider-container" id="volumeSliderContainer">
-                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
-                <div class="volume-value" id="volumeValue">70%</div>
-                <div class="volume-presets" id="volumePresets">
-                    <div class="volume-preset-btn" data-volume="0">0</div>
-                    <div class="volume-preset-btn" data-volume="25">25</div>
-                    <div class="volume-preset-btn" data-volume="50">50</div>
-                    <div class="volume-preset-btn" data-volume="75">75</div>
-                    <div class="volume-preset-btn" data-volume="100">100</div>
-                </div>
-            </div>
-        </div>
+
         
         
 
         
         <!-- 游戏主界面 -->
         <div class="game-main-menu" id="gameMainMenu">
+        <script>
+            // 使用纯JavaScript添加按钮点击事件
+            document.addEventListener('DOMContentLoaded', function() {
+                
+                // 排行榜按钮
+                const leaderboardBtn = document.getElementById('leaderboardBtn');
+                if (leaderboardBtn) {
+                    leaderboardBtn.addEventListener('click', function() {
+                        console.log('排行榜按钮通过纯JavaScript被点击');
+                        window.location.href = './leaderboard.html';
+                    });
+                } else {
+                    console.error('排行榜按钮元素未找到');
+                }
+                
+                // 个人信息按钮
+                const userInfoBtn = document.getElementById('userInfoBtn');
+                if (userInfoBtn) {
+                    userInfoBtn.addEventListener('click', function() {
+                        console.log('个人信息按钮通过纯JavaScript被点击');
+                        window.location.href = './userinfo.html';
+                    });
+                } else {
+                    console.error('个人信息按钮元素未找到');
+                }
+                
+
+                
+                // 选择地图按钮
+                const mapSelectionBtn = document.getElementById('mapSelectionBtn');
+                if (mapSelectionBtn) {
+                    mapSelectionBtn.addEventListener('click', function() {
+                        console.log('选择地图按钮通过纯JavaScript被点击');
+                        const gameMainMenu = document.getElementById('gameMainMenu');
+                        const mapSelection = document.getElementById('mapSelection');
+                        if (gameMainMenu && mapSelection) {
+                            gameMainMenu.style.display = 'none';
+                            mapSelection.style.display = 'block';
+                        }
+                    });
+                } else {
+                    console.error('选择地图按钮元素未找到');
+                }
+                
+                // 返回登录按钮
+                const backToLoginBtn = document.getElementById('backToLoginBtn');
+                if (backToLoginBtn) {
+                    backToLoginBtn.addEventListener('click', function() {
+                        console.log('返回登录按钮通过纯JavaScript被点击');
+                        window.location.href = '../index.html';
+                    });
+                } else {
+                    console.error('返回登录按钮元素未找到');
+                }
+                
+                // 游戏帮助按钮
+                const helpBtn = document.getElementById('helpBtnFromMain');
+                if (helpBtn) {
+                    helpBtn.addEventListener('click', function() {
+                        console.log('游戏帮助按钮通过纯JavaScript被点击');
+                        window.location.href = './help.html';
+                    });
+                } else {
+                    console.error('游戏帮助按钮元素未找到');
+                }
+                
+                // 返回按钮
+                const backBtn = document.getElementById('backButton');
+                if (backBtn) {
+                    backBtn.addEventListener('click', function() {
+                        console.log('返回按钮通过纯JavaScript被点击');
+                        window.history.back();
+                    });
+                } else {
+                    console.error('返回按钮元素未找到');
+                }
+                
+                // 音量控制功能
+                const volumeIcon = document.getElementById('volumeIcon');
+                const volumeSlider = document.getElementById('volumeSlider');
+                
+                // 获取所有音频元素
+                function getAllAudioElements() {
+                    return document.querySelectorAll('audio');
+                }
+                
+                // 设置所有音频的音量
+                function setAllAudioVolume(volume) {
+                    const audioElements = getAllAudioElements();
+                    audioElements.forEach(audio => {
+                        audio.volume = volume / 100;
+                    });
+                }
+                
+                // 初始化音量
+                const initialVolume = volumeSlider.value;
+                setAllAudioVolume(initialVolume);
+                
+                // 音量滑块事件
+                if (volumeSlider) {
+                    volumeSlider.addEventListener('input', function() {
+                        const volume = this.value;
+                        setAllAudioVolume(volume);
+                        
+                        // 更新音量图标
+                        if (volumeIcon) {
+                            if (volume === '0') {
+                                volumeIcon.textContent = '🔇';
+                            } else if (volume < '30') {
+                                volumeIcon.textContent = '🔉';
+                            } else {
+                                volumeIcon.textContent = '🔊';
+                            }
+                        }
+                        
+                        console.log('音量设置为:', volume);
+                    });
+                }
+                
+                // 音量图标点击事件（静音/取消静音）
+                if (volumeIcon) {
+                    volumeIcon.addEventListener('click', function() {
+                        if (this.textContent === '🔇') {
+                            // 取消静音
+                            this.textContent = '🔊';
+                            if (volumeSlider) {
+                                volumeSlider.value = '50';
+                                setAllAudioVolume('50');
+                            }
+                        } else {
+                            // 静音
+                            this.textContent = '🔇';
+                            if (volumeSlider) {
+                                volumeSlider.value = '0';
+                                setAllAudioVolume('0');
+                            }
+                        }
+                    });
+                }
+            });
+        </script>
             <!-- 动态背景视频 -->
             <video id="backgroundVideo" autoplay muted loop>
                 <source src="../assets/images/mainImage.mp4" type="video/mp4">
@@ -231,6 +368,8 @@
                 </div>
                 <div class="main-menu-body">
                     <button class="main-menu-button primary" id="mapSelectionBtn">选择地图</button>
+                    <button class="main-menu-button secondary" id="leaderboardBtn">排行榜</button>
+                    <button class="main-menu-button secondary" id="userInfoBtn">个人信息</button>
                     <button class="main-menu-button secondary" id="helpBtnFromMain">游戏帮助</button>
                     <button class="main-menu-button secondary" id="backToLoginBtn">返回登录</button>
                 </div>
@@ -281,6 +420,15 @@
         
 
         
+        <!-- 返回按钮 -->
+        <div class="exit-button" id="backButton">返回</div>
+        
+        <!-- 音量控制组件 -->
+        <div class="volume-control">
+            <div class="volume-icon" id="volumeIcon">🔊</div>
+            <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
+        </div>
+        
         <!-- 加载页面 -->
         <div class="loading-page" id="loadingPage">
             <!-- 加载页面视频背景 -->
@@ -298,5 +446,6 @@
         </div>
 
         <script src ="../scripts/control.js"></script>
+
     </body>
 </html>

@@ -77,7 +77,9 @@ function hideLoadingPage() {
 }
 
 // 主页面背景音乐控制
+console.log('jQuery ready function started');
 $(document).ready(function() {
+    console.log('jQuery ready function executed');
     // 获取主页面背景音频元素
     mainMenuBGM = document.getElementById('mainMenuBGM');
     
@@ -1693,12 +1695,39 @@ function game(){
         $('#mapSelection').css('display', 'block');
     });
     
-    $('#helpBtnFromMain').click(function() {
-        $('#helpModal').css('display', 'block');
-    });
+    
     
     $('#backToLoginBtn').click(function() {
         window.location.href = '../index.html';
+    });
+    
+    // 排行榜按钮事件处理
+    $('#leaderboardBtn').click(function() {
+        console.log('排行榜按钮被点击');
+        // 跳转到排行榜页面
+        window.location.href = './leaderboard.html';
+    });
+    
+    // 个人信息按钮事件处理
+    $('#userInfoBtn').click(function() {
+        // 播放点击音效
+        if (mapClickSound) {
+            mapClickSound.currentTime = 0;
+            mapClickSound.play().catch(e => console.log('点击音效播放失败:', e));
+        }
+        // 跳转到个人信息页面
+        window.location.href = './userinfo.html';
+    });
+    
+    // 游戏帮助按钮事件处理
+    $('#helpBtnFromMain').click(function() {
+        // 播放点击音效
+        if (mapClickSound) {
+            mapClickSound.currentTime = 0;
+            mapClickSound.play().catch(e => console.log('点击音效播放失败:', e));
+        }
+        // 跳转到游戏帮助页面
+        window.location.href = './help.html';
     });
     
     // 地图选择界面返回主菜单按钮

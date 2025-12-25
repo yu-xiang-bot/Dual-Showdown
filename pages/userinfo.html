@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人信息 - Dual Edge Showdown</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', 'Arial', sans-serif;
+            background-image: url('../assets/images/userBcke.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(15, 15, 25, 0.4), rgba(30, 30, 40, 0.3));
+            z-index: -1;
+        }
+        
+        .userinfo-container {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15));
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            max-width: 500px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .userinfo-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+        
+        .userinfo-title {
+            text-align: center;
+            font-size: 2rem;
+            color: #ffffff;
+            margin-bottom: 30px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            position: relative;
+        }
+        
+        .userinfo-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+            border-radius: 1px;
+        }
+        
+        .userinfo-avatar {
+            display: block;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .userinfo-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .avatar-upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .userinfo-avatar:hover .avatar-upload-overlay {
+            opacity: 1;
+        }
+        
+        .avatar-upload-text {
+            color: white;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .avatar-upload-container {
+            display: none;
+            margin-bottom: 20px;
+        }
+        
+        .avatar-upload-btn {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .avatar-upload-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .avatar-upload-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 10px;
+            display: block;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .userinfo-details {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .userinfo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .userinfo-item.bio-item {
+            align-items: flex-start;
+            padding-bottom: 15px;
+        }
+        
+        .userinfo-item.username-item {
+            padding-bottom: 15px;
+        }
+        
+        .edit-btn {
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+        
+        .edit-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .bio-edit-container {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .bio-input {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .bio-input:focus {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .bio-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .char-counter {
+            text-align: right;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+        }
+        
+        .bio-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .save-btn, .cancel-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .save-btn {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.8), rgba(76, 175, 80, 0.6));
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .save-btn:hover {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(76, 175, 80, 0.7));
+            transform: translateY(-2px);
+        }
+        
+        .cancel-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .username-edit-container {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .username-input {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .username-input:focus {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .username-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .username-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .userinfo-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .userinfo-label {
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .userinfo-value {
+            color: #ffffff;
+            font-size: 1rem;
+            text-align: right;
+            font-weight: 600;
+        }
+        
+        .back-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-top: 30px;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.8), rgba(76, 175, 80, 0.6));
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .back-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .back-button:hover {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(76, 175, 80, 0.7));
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .back-button:hover::before {
+            left: 100%;
+        }
+        
+        /* 音量控制样式 */
+        .volume-control {
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            z-index: 9999 !important;
+            display: flex !important;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7) !important;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            padding: 10px;
+            border-radius: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        .volume-control:hover {
+            background: rgba(0, 0, 0, 0.7);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .volume-icon {
+            width: 24px;
+            height: 24px;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            transition: transform 0.2s ease;
+            color: #ffffff !important;
+            user-select: none;
+        }
+        
+        .volume-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .volume-slider-container {
+            display: flex !important;
+            align-items: center;
+            width: 120px;
+            position: relative;
+        }
+        
+        .volume-slider {
+            -webkit-appearance: none !important;
+            appearance: none !important;
+            width: 80px !important;
+            height: 4px !important;
+            background: rgba(255, 255, 255, 0.3) !important;
+            border-radius: 2px !important;
+            outline: none !important;
+            transition: background 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none !important;
+            appearance: none !important;
+            width: 12px !important;
+            height: 12px !important;
+            background: white !important;
+            border-radius: 50% !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+        }
+        
+        .volume-slider::-moz-range-thumb {
+            width: 12px !important;
+            height: 12px !important;
+            background: white !important;
+            border-radius: 50% !important;
+            cursor: pointer !important;
+            border: none !important;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .volume-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+        }
+        
+        .volume-value {
+            font-size: 0.75rem;
+            color: white;
+            margin-left: 8px;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .volume-control.muted .volume-slider {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .userinfo-container {
+                padding: 25px;
+            }
+            
+            .userinfo-title {
+                font-size: 1.5rem;
+            }
+            
+            .userinfo-avatar {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .userinfo-item {
+                padding: 10px 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .userinfo-container {
+                padding: 20px;
+            }
+            
+            .userinfo-title {
+                font-size: 1.3rem;
+            }
+            
+            .userinfo-avatar {
+                width: 90px;
+                height: 90px;
+            }
+            
+            .userinfo-label, .userinfo-value {
+                font-size: 0.9rem;
+            }
+            
+            .back-button {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+    </head>
+<body>
+    <!-- 背景音乐 -->
+    <audio id="bgMusic" loop>
+        <source src="../assets/sounds/effects/mainMusic.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- 音量控制 -->
+    <div class="volume-control" id="volumeControl">
+        <div class="volume-icon" id="volumeIcon">🔊</div>
+        <div class="volume-slider-container" id="volumeSliderContainer">
+            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="30">
+            <div class="volume-value" id="volumeValue">30%</div>
+        </div>
+    </div>
+    
+    <div class="userinfo-container">
+        <h1 class="userinfo-title">个人信息</h1>
+        <div style="position: relative; display: inline-block;">
+            <img src="../assets/images/avatar-default.svg" alt="用户头像" class="userinfo-avatar" id="user-avatar">
+            <div class="avatar-upload-overlay" id="avatar-upload-overlay">
+                <div class="avatar-upload-text">点击上传头像</div>
+            </div>
+        </div>
+        <div class="avatar-upload-container" id="avatar-upload-container">
+            <input type="file" id="avatar-file-input" accept="image/*" style="display: none;">
+            <button class="avatar-upload-btn" id="avatar-upload-btn">选择图片文件</button>
+            <img src="" alt="头像预览" class="avatar-preview" id="avatar-preview" style="display: none;">
+            <div class="avatar-upload-actions" id="avatar-upload-actions" style="display: none;">
+                <button class="save-btn" id="save-avatar-btn">保存头像</button>
+                <button class="cancel-btn" id="cancel-avatar-btn">取消</button>
+            </div>
+        </div>
+        <div class="userinfo-details">
+            <div class="userinfo-item username-item">
+                <span class="userinfo-label">用户名</span>
+                <span class="userinfo-value" id="username-display">玩家一号</span>
+                <button class="edit-btn" id="edit-username-btn">编辑</button>
+            </div>
+            <div class="username-edit-container" id="username-edit-container">
+                <input type="text" class="username-input" id="username-input" maxlength="20" placeholder="请输入用户名（最多20个字符）">
+                <div class="username-actions">
+                    <button class="save-btn" id="save-username-btn">保存</button>
+                    <button class="cancel-btn" id="cancel-username-btn">取消</button>
+                </div>
+            </div>
+            <div class="userinfo-item">
+                <span class="userinfo-label">邮箱</span>
+                <span class="userinfo-value" id="email-display">player@example.com</span>
+            </div>
+            <div class="userinfo-item">
+                <span class="userinfo-label">等级</span>
+                <span class="userinfo-value">Lv. 25</span>
+            </div>
+            <div class="userinfo-item bio-item">
+                <span class="userinfo-label">个人介绍</span>
+                <span class="userinfo-value" id="bio-display">热爱游戏，享受竞技的乐趣</span>
+                <button class="edit-btn" id="edit-bio-btn">编辑</button>
+            </div>
+            <div class="bio-edit-container" id="bio-edit-container">
+                <textarea class="bio-input" id="bio-input" maxlength="100" placeholder="请输入个人介绍（最多100字）">热爱游戏，享受竞技的乐趣</textarea>
+                <div class="char-counter">
+                    <span id="char-count">18</span>/100
+                </div>
+                <div class="bio-actions">
+                    <button class="save-btn" id="save-bio-btn">保存</button>
+                    <button class="cancel-btn" id="cancel-bio-btn">取消</button>
+                </div>
+            </div>
+            <div class="userinfo-item">
+                <span class="userinfo-label">连续登录</span>
+                <span class="userinfo-value">7天</span>
+            </div>
+        </div>
+        <button class="back-button" onclick="goBack()">返回游戏</button>
+    </div>
+    
+    <script>
+        function goBack() {
+            window.location.href = 'game.html';
+        }
+        
+        // 个人信息编辑功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 个人介绍相关元素
+            const editBioBtn = document.getElementById('edit-bio-btn');
+            const saveBioBtn = document.getElementById('save-bio-btn');
+            const cancelBioBtn = document.getElementById('cancel-bio-btn');
+            const bioDisplay = document.getElementById('bio-display');
+            const bioEditContainer = document.getElementById('bio-edit-container');
+            const bioInput = document.getElementById('bio-input');
+            
+            // 用户名相关元素
+            const editUsernameBtn = document.getElementById('edit-username-btn');
+            const saveUsernameBtn = document.getElementById('save-username-btn');
+            const cancelUsernameBtn = document.getElementById('cancel-username-btn');
+            const usernameDisplay = document.getElementById('username-display');
+            const usernameEditContainer = document.getElementById('username-edit-container');
+            const usernameInput = document.getElementById('username-input');
+            
+            // 从localStorage加载保存的用户信息
+            const savedUsername = localStorage.getItem('username');
+            const savedBio = localStorage.getItem('userBio');
+            const savedEmail = localStorage.getItem('userEmail');
+            
+            // 加载用户名
+            if (savedUsername) {
+                usernameDisplay.textContent = savedUsername;
+                usernameInput.value = savedUsername;
+            }
+            
+            // 加载邮箱
+            if (savedEmail) {
+                document.getElementById('email-display').textContent = savedEmail;
+            } else {
+                // 如果没有保存的邮箱，尝试从登录信息获取
+                const user = JSON.parse(localStorage.getItem('user'));
+                if (user && user.email) {
+                    document.getElementById('email-display').textContent = user.email;
+                    localStorage.setItem('userEmail', user.email);
+                }
+            }
+            
+            // 加载个人介绍
+            if (savedBio) {
+                bioDisplay.textContent = savedBio;
+                bioInput.value = savedBio;
+            }
+            
+            // 个人介绍编辑功能
+            editBioBtn.addEventListener('click', function() {
+                bioEditContainer.style.display = 'flex';
+                editBioBtn.style.display = 'none';
+                bioInput.focus();
+            });
+            
+            saveBioBtn.addEventListener('click', function() {
+                const newBio = bioInput.value.trim();
+                if (newBio) {
+                    bioDisplay.textContent = newBio;
+                    localStorage.setItem('userBio', newBio);
+                    closeBioEditMode();
+                }
+            });
+            
+            cancelBioBtn.addEventListener('click', function() {
+                bioInput.value = bioDisplay.textContent;
+                closeBioEditMode();
+            });
+            
+            // 用户名编辑功能
+            editUsernameBtn.addEventListener('click', function() {
+                usernameEditContainer.style.display = 'flex';
+                editUsernameBtn.style.display = 'none';
+                usernameInput.focus();
+                usernameInput.select();
+            });
+            
+            saveUsernameBtn.addEventListener('click', function() {
+                const newUsername = usernameInput.value.trim();
+                if (newUsername) {
+                    usernameDisplay.textContent = newUsername;
+                    localStorage.setItem('username', newUsername);
+                    closeUsernameEditMode();
+                }
+            });
+            
+            cancelUsernameBtn.addEventListener('click', function() {
+                usernameInput.value = usernameDisplay.textContent;
+                closeUsernameEditMode();
+            });
+            
+            // 关闭个人介绍编辑模式
+            function closeBioEditMode() {
+                bioEditContainer.style.display = 'none';
+                editBioBtn.style.display = 'block';
+            }
+            
+            // 关闭用户名编辑模式
+            function closeUsernameEditMode() {
+                usernameEditContainer.style.display = 'none';
+                editUsernameBtn.style.display = 'block';
+            }
+            
+            // 字符计数功能
+            const charCount = document.getElementById('char-count');
+            updateCharCount();
+            
+            bioInput.addEventListener('input', function() {
+                updateCharCount();
+            });
+            
+            function updateCharCount() {
+                const currentLength = bioInput.value.length;
+                charCount.textContent = currentLength;
+                
+                // 当接近字数限制时改变颜色
+                if (currentLength > 90) {
+                    charCount.style.color = 'rgba(255, 100, 100, 0.9)';
+                } else {
+                    charCount.style.color = 'rgba(255, 255, 255, 0.6)';
+                }
+            }
+            
+            // 添加回车键保存功能
+            usernameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    saveUsernameBtn.click();
+                }
+            });
+            
+            bioInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault(); // 防止换行
+                    saveBioBtn.click();
+                }
+            });
+        });
+        
+        // 头像上传功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const avatar = document.getElementById('user-avatar');
+            const avatarUploadOverlay = document.getElementById('avatar-upload-overlay');
+            const avatarUploadContainer = document.getElementById('avatar-upload-container');
+            const avatarFileInput = document.getElementById('avatar-file-input');
+            const avatarUploadBtn = document.getElementById('avatar-upload-btn');
+            const avatarPreview = document.getElementById('avatar-preview');
+            const avatarUploadActions = document.getElementById('avatar-upload-actions');
+            const saveAvatarBtn = document.getElementById('save-avatar-btn');
+            const cancelAvatarBtn = document.getElementById('cancel-avatar-btn');
+            
+            // 加载用户头像
+            loadUserAvatar();
+            
+            // 点击头像或覆盖层触发上传
+            avatar.addEventListener('click', function() {
+                avatarFileInput.click();
+            });
+            
+            avatarUploadOverlay.addEventListener('click', function() {
+                avatarFileInput.click();
+            });
+            
+            avatarUploadBtn.addEventListener('click', function() {
+                avatarFileInput.click();
+            });
+            
+            // 文件选择事件
+            avatarFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // 验证文件类型
+                    if (!file.type.match('image.*')) {
+                        alert('请选择图片文件！');
+                        return;
+                    }
+                    
+                    // 验证文件大小（限制为2MB）
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert('图片大小不能超过2MB！');
+                        return;
+                    }
+                    
+                    // 显示预览
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        avatarPreview.src = e.target.result;
+                        avatarPreview.style.display = 'block';
+                        avatarUploadActions.style.display = 'flex';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // 保存头像
+            saveAvatarBtn.addEventListener('click', async function() {
+                const file = avatarFileInput.files[0];
+                if (!file) return;
+                
+                try {
+                    // 显示上传中状态
+                    saveAvatarBtn.disabled = true;
+                    saveAvatarBtn.textContent = '上传中...';
+                    
+                    // 上传头像到Supabase存储
+                    if (window.userDataManager) {
+                        const result = await window.userDataManager.uploadAvatar(file);
+                        
+                        if (result.success) {
+                            // 更新头像显示
+                            avatar.src = result.url;
+                            
+                            // 重置上传表单
+                            resetAvatarUpload();
+                            
+                            // 保存到localStorage作为缓存
+                            localStorage.setItem('userAvatar', result.url);
+                            
+                            alert('头像上传成功！');
+                        } else {
+                            alert('头像上传失败：' + result.error);
+                        }
+                    } else {
+                        // 如果Supabase不可用，使用localStorage模拟
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const dataUrl = e.target.result;
+                            avatar.src = dataUrl;
+                            localStorage.setItem('userAvatar', dataUrl);
+                            resetAvatarUpload();
+                            alert('头像更新成功！');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                } catch (error) {
+                    console.error('头像上传错误:', error);
+                    alert('头像上传失败，请重试！');
+                } finally {
+                    // 恢复按钮状态
+                    saveAvatarBtn.disabled = false;
+                    saveAvatarBtn.textContent = '保存头像';
+                }
+            });
+            
+            // 取消上传
+            cancelAvatarBtn.addEventListener('click', function() {
+                resetAvatarUpload();
+            });
+            
+            // 加载用户头像
+            async function loadUserAvatar() {
+                try {
+                    // 先从localStorage获取缓存的头像
+                    const cachedAvatar = localStorage.getItem('userAvatar');
+                    if (cachedAvatar) {
+                        avatar.src = cachedAvatar;
+                        return;
+                    }
+                    
+                    // 如果Supabase可用，从数据库获取
+                    if (window.userDataManager) {
+                        const profile = await window.userDataManager.getUserProfile();
+                        if (profile && profile.avatar_url) {
+                            avatar.src = profile.avatar_url;
+                            localStorage.setItem('userAvatar', profile.avatar_url);
+                            return;
+                        }
+                    }
+                    
+                    // 使用默认头像
+                    avatar.src = '../assets/images/avatar-default.svg';
+                } catch (error) {
+            console.error('加载用户头像失败:', error);
+            avatar.src = '../assets/images/avatar-default.svg';
+                }
+            }
+            
+            // 重置上传表单
+            function resetAvatarUpload() {
+                avatarFileInput.value = '';
+                avatarPreview.style.display = 'none';
+                avatarUploadActions.style.display = 'none';
+                avatarUploadContainer.style.display = 'none';
+                avatarPreview.src = '';
+            }
+        });
+        
+        // 背景音乐控制
+        document.addEventListener('DOMContentLoaded', function() {
+            const bgMusic = document.getElementById('bgMusic');
+            const volumeIcon = document.getElementById('volumeIcon');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const volumeValue = document.getElementById('volumeValue');
+            const volumeControl = document.getElementById('volumeControl');
+            
+            let currentVolume = 30; // 默认音量为30%
+            let savedVolume = 30; // 保存的音量，用于静音后恢复
+            let isMusicPlaying = false;
+            
+            // 设置初始音量
+            bgMusic.volume = currentVolume / 100;
+            
+            // 点击页面任意位置开始播放音乐（解决浏览器自动播放限制）
+            document.addEventListener('click', function initMusic() {
+                if (!isMusicPlaying) {
+                    bgMusic.play().then(() => {
+                        isMusicPlaying = true;
+                        console.log('背景音乐开始播放');
+                    }).catch(error => {
+                        console.log('背景音乐播放失败:', error);
+                    });
+                    
+                    // 移除事件监听器
+                    document.removeEventListener('click', initMusic);
+                }
+            }, { once: true });
+            
+            // 音量图标点击事件
+            volumeIcon.addEventListener('click', function() {
+                if (currentVolume > 0) {
+                    // 保存当前音量并静音
+                    savedVolume = currentVolume;
+                    currentVolume = 0;
+                    volumeSlider.value = 0;
+                    volumeValue.textContent = "0%";
+                    volumeIcon.textContent = "🔇";
+                    volumeControl.classList.add("muted");
+                } else {
+                    // 恢复之前的音量
+                    currentVolume = savedVolume || 30;
+                    volumeSlider.value = currentVolume;
+                    volumeValue.textContent = currentVolume + "%";
+                    updateVolumeIcon();
+                    volumeControl.classList.remove("muted");
+                }
+                bgMusic.volume = currentVolume / 100;
+            });
+            
+            // 音量滑块变化事件
+            volumeSlider.addEventListener('input', function() {
+                currentVolume = parseInt(this.value);
+                volumeValue.textContent = currentVolume + "%";
+                bgMusic.volume = currentVolume / 100;
+                updateVolumeIcon();
+                
+                // 如果用户从静音状态调整音量，自动取消静音
+                if (currentVolume > 0 && volumeControl.classList.contains("muted")) {
+                    volumeControl.classList.remove("muted");
+                    savedVolume = currentVolume;
+                }
+                
+                // 更新滑块背景
+                updateSliderBackground();
+            });
+            
+            // 更新音量图标
+            function updateVolumeIcon() {
+                if (currentVolume == 0) {
+                    volumeIcon.textContent = "🔇";
+                } else if (currentVolume < 30) {
+                    volumeIcon.textContent = "🔈";
+                } else if (currentVolume < 70) {
+                    volumeIcon.textContent = "🔉";
+                } else {
+                    volumeIcon.textContent = "🔊";
+                }
+            }
+            
+            // 更新滑块背景
+            function updateSliderBackground() {
+                const percentage = currentVolume;
+                const color1 = percentage < 30 ? '#ff5252' : percentage < 70 ? '#ffeb3b' : '#4caf50';
+                const color2 = percentage < 30 ? '#ffeb3b' : percentage < 70 ? '#4caf50' : '#2e7d32';
+                volumeSlider.style.background = `linear-gradient(to right, ${color1} 0%, ${color1} ${percentage}%, rgba(255,255,255,0.3) ${percentage}%, rgba(255,255,255,0.3) 100%)`;
+            }
+            
+            // 初始化滑块背景
+            updateSliderBackground();
+        });
+    </script>
+</body>
+</html>
